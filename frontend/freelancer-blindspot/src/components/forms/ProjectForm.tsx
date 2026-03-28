@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { X, ArrowRight, Zap, Target } from 'lucide-react'
+import { X, ArrowRight } from 'lucide-react'
 import type { Project, PricingType, ProjectType } from '../../types'
 import { createProject } from '../../api/projects'
 

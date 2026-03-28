@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Plus, DollarSign, Clock, TrendingUp, AlertTriangle, Sparkles, LayoutDashboard } from 'lucide-react'
+import { Plus, DollarSign, TrendingUp, AlertTriangle, Sparkles, LayoutDashboard } from 'lucide-react'
 import Navbar from '../components/layout/Navbar'
 import ProjectCard from '../components/dashboard/ProjectCard'
 import StatsCard from '../components/dashboard/StatsCard'
@@ -9,6 +9,8 @@ import PIPGenerator from '../components/dashboard/PIPGenerator'
 import { getAllProjectsWithStats } from '../api/projects'
 import type { ProjectWithStats } from '../types'
 import SoftAurora from '../components/SoftAurora'
+import FreelanceScoutWidget from '../components/dashboard/FreelanceScoutWidget'
+
 
 export default function Dashboard() {
   const [projects, setProjects] = useState<ProjectWithStats[]>([])
@@ -185,10 +187,14 @@ export default function Dashboard() {
         <ProjectForm onClose={() => setShowForm(false)} onCreated={() => { setShowForm(false); load() }} />
       )}
 
+      {/* AI Agent Widget Integration */}
+      <FreelanceScoutWidget />
+
       <style>{`
         .spin { animation: spin-anim 1s linear infinite; }
         @keyframes spin-anim { to { transform: rotate(360deg); } }
       `}</style>
     </div>
+
   )
 }

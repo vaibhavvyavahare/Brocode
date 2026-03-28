@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { X, CheckCircle2, AlertCircle, ArrowRight, Copy, Share2, Sparkles, TrendingUp } from 'lucide-react'
+import { X, CheckCircle2, AlertCircle, Share2, Sparkles, TrendingUp } from 'lucide-react'
 
 interface PIPGeneratorProps {
   project: {

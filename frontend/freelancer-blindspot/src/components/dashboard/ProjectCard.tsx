@@ -1,6 +1,6 @@
 import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
-import { Clock, DollarSign, ArrowRight, Sparkles } from 'lucide-react'
+import { Sparkles } from 'lucide-react'
 import type { ProjectWithStats } from '../../types'
 
 interface ProjectCardProps {

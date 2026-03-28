@@ -192,6 +192,7 @@ export default function SoftAurora({
     let targetMouse = [0.5, 0.5];
 
     function handleMouseMove(e: MouseEvent) {
+      if (!(gl.canvas instanceof HTMLCanvasElement)) return;
       const rect = gl.canvas.getBoundingClientRect();
       targetMouse = [
         (e.clientX - rect.left) / rect.width,
@@ -238,11 +239,13 @@ export default function SoftAurora({
     });
 
     const mesh = new Mesh(gl, { geometry, program });
-    container.appendChild(gl.canvas);
+    if (gl.canvas instanceof HTMLCanvasElement) {
+      container.appendChild(gl.canvas);
+    }
 
-    if (enableMouseInteraction) {
-      gl.canvas.addEventListener('mousemove', handleMouseMove);
-      gl.canvas.addEventListener('mouseleave', handleMouseLeave);
+    if (enableMouseInteraction && gl.canvas instanceof HTMLCanvasElement) {
+      gl.canvas.addEventListener('mousemove', handleMouseMove as any);
+      gl.canvas.addEventListener('mouseleave', handleMouseLeave as any);
     }
 
     let animationFrameId: number;
@@ -268,12 +271,15 @@ export default function SoftAurora({
     return () => {
       cancelAnimationFrame(animationFrameId);
       window.removeEventListener('resize', resize);
-      if (enableMouseInteraction) {
-        gl.canvas.removeEventListener('mousemove', handleMouseMove);
-        gl.canvas.removeEventListener('mouseleave', handleMouseLeave);
+      if (enableMouseInteraction && gl.canvas instanceof HTMLCanvasElement) {
+        gl.canvas.removeEventListener('mousemove', handleMouseMove as any);
+        gl.canvas.removeEventListener('mouseleave', handleMouseLeave as any);
       }
-      container.removeChild(gl.canvas);
-      gl.getExtension('WEBGL_lose_context')?.loseContext();
+      if (gl.canvas instanceof HTMLCanvasElement) {
+        container.removeChild(gl.canvas);
+      }
+      const loseContext = gl.getExtension('WEBGL_lose_context');
+      if (loseContext) loseContext.loseContext();
     };
   }, [speed, scale, brightness, color1, color2, noiseFrequency, noiseAmplitude, bandHeight, bandSpread, octaveDecay, layerOffset, colorSpeed, enableMouseInteraction, mouseInfluence]);
 

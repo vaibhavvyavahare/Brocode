@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { ArrowLeft, Plus, Clock, DollarSign, TrendingDown, AlertTriangle } from 'lucide-react'
+import { ArrowLeft, Plus } from 'lucide-react'
 import Navbar from '../components/layout/Navbar'
 import StatsCard from '../components/dashboard/StatsCard'
 import AlertBanner from '../components/dashboard/AlertBanner'

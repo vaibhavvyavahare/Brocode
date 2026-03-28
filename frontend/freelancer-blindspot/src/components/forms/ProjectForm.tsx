@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { X } from 'lucide-react'
+import { X, ArrowRight, Zap, Target } from 'lucide-react'
 import type { Project, PricingType, ProjectType } from '../../types'
 import { createProject } from '../../api/projects'
 
@@ -10,13 +10,16 @@ interface ProjectFormProps {
 }
 
 const inputStyle: React.CSSProperties = {
-  width: '100%', background: 'rgba(255,255,255,0.04)', border: '1px solid var(--border2)',
-  borderRadius: 10, padding: '11px 14px', color: 'var(--text)', fontSize: 14,
-  fontFamily: 'Inter, sans-serif', outline: 'none', transition: 'border-color 0.2s',
+  width: '100%', background: 'white', border: '1px solid var(--border-strong)',
+  borderRadius: 16, padding: '14px 18px', color: 'var(--text)', fontSize: 16,
+  fontFamily: 'Plus Jakarta Sans, sans-serif', outline: 'none', transition: 'all 0.3s ease',
+  boxShadow: '0 2px 4px rgba(0,0,0,0.02)', fontWeight: 500
 }
+
 const labelStyle: React.CSSProperties = {
-  display: 'block', fontSize: 12, fontFamily: 'JetBrains Mono, monospace',
-  color: 'var(--text2)', letterSpacing: 1, marginBottom: 6, textTransform: 'uppercase' as const,
+  display: 'block', fontSize: 11, fontFamily: 'JetBrains Mono, monospace',
+  color: 'var(--text-dim)', letterSpacing: 2, marginBottom: 8, textTransform: 'uppercase' as const,
+  fontWeight: 800
 }
 
 export default function ProjectForm({ onClose, onCreated }: ProjectFormProps) {
@@ -46,126 +49,128 @@ export default function ProjectForm({ onClose, onCreated }: ProjectFormProps) {
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         style={{
-          position: 'fixed', inset: 0, zIndex: 200,
-          background: 'rgba(7,7,16,0.85)', backdropFilter: 'blur(20px)',
+          position: 'fixed', inset: 0, zIndex: 1000,
+          background: 'rgba(243, 239, 230, 0.85)', backdropFilter: 'blur(32px)',
           display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24,
         }}
         onClick={e => e.target === e.currentTarget && onClose()}
       >
         <motion.form
-          initial={{ opacity: 0, scale: 0.93, y: 30 }}
+          initial={{ opacity: 0, scale: 0.95, y: 30 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.93, y: 30 }}
-          transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+          exit={{ opacity: 0, scale: 0.95, y: 30 }}
+          transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
           onSubmit={handleSubmit}
-          className="glass-strong"
-          style={{ borderRadius: 24, padding: 32, width: '100%', maxWidth: 520, maxHeight: '90vh', overflowY: 'auto' }}
+          className="card-premium"
+          style={{ 
+            borderRadius: 32, padding: 48, width: '100%', maxWidth: 640, 
+            maxHeight: '90vh', overflowY: 'auto', background: 'white',
+            boxShadow: '0 40px 100px rgba(0,0,0,0.15)',
+            border: '1px solid var(--border-strong)'
+          }}
         >
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 28 }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 40 }}>
             <div>
-              <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 11, color: 'var(--accent)', letterSpacing: 2, marginBottom: 4 }}>NEW PROJECT</div>
-              <div style={{ fontFamily: 'Syne, sans-serif', fontWeight: 800, fontSize: 24 }}>Add Project</div>
+              <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 11, color: 'var(--accent)', letterSpacing: 3, marginBottom: 12, fontWeight: 900 }}>CREATE ACCOUNT</div>
+              <h2 className="font-serif" style={{ fontWeight: 800, fontSize: 36, lineHeight: 1.1 }}>New Project Analysis</h2>
             </div>
-            <button type="button" onClick={onClose} style={{ background: 'rgba(255,255,255,0.06)', border: '1px solid var(--border)', borderRadius: 10, padding: 8, color: 'var(--text2)', cursor: 'pointer' }}>
-              <X size={18} />
+            <button type="button" onClick={onClose} style={{ background: 'var(--surface-alt)', border: '1px solid var(--border)', borderRadius: 14, width: 44, height: 44, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: 'var(--text-dim)' }}>
+              <X size={20} />
             </button>
           </div>
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
-            {/* Title */}
-            <div>
-              <label style={labelStyle}>Project Title *</label>
-              <input required value={form.title} onChange={e => set('title', e.target.value)}
-                placeholder="Website Redesign" style={inputStyle}
-                onFocus={e => (e.target.style.borderColor = 'rgba(245,158,11,0.5)')}
-                onBlur={e => (e.target.style.borderColor = 'var(--border2)')} />
-            </div>
-
-            {/* Client */}
-            <div>
-              <label style={labelStyle}>Client Name *</label>
-              <input required value={form.client_name} onChange={e => set('client_name', e.target.value)}
-                placeholder="Sharma Enterprises" style={inputStyle}
-                onFocus={e => (e.target.style.borderColor = 'rgba(245,158,11,0.5)')}
-                onBlur={e => (e.target.style.borderColor = 'var(--border2)')} />
-            </div>
-
-            {/* Project type */}
-            <div>
-              <label style={labelStyle}>Project Type</label>
-              <select value={form.project_type} onChange={e => set('project_type', e.target.value)} style={{ ...inputStyle, cursor: 'pointer' }}>
-                {['Design', 'Dev', 'Writing', 'Marketing', 'Other'].map(t => <option key={t} value={t}>{t}</option>)}
-              </select>
-            </div>
-
-            {/* Pricing type toggle */}
-            <div>
-              <label style={labelStyle}>Pricing Type</label>
-              <div style={{ display: 'flex', gap: 8 }}>
-                {['fixed', 'hourly'].map(pt => (
-                  <button key={pt} type="button" onClick={() => set('pricing_type', pt)}
-                    style={{
-                      flex: 1, padding: '10px 0', borderRadius: 10, cursor: 'pointer',
-                      background: form.pricing_type === pt ? 'rgba(245,158,11,0.15)' : 'rgba(255,255,255,0.03)',
-                      border: `1px solid ${form.pricing_type === pt ? 'rgba(245,158,11,0.4)' : 'var(--border)'}`,
-                      color: form.pricing_type === pt ? '#f59e0b' : 'var(--text2)',
-                      fontFamily: 'Syne, sans-serif', fontWeight: 600, fontSize: 14, transition: 'all 0.2s',
-                    }}>
-                    {pt === 'fixed' ? 'Fixed Price' : 'Hourly'}
-                  </button>
-                ))}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
+              <div>
+                <label style={labelStyle}>Project Subject *</label>
+                <input required value={form.title} onChange={e => set('title', e.target.value)}
+                  placeholder="Website Redesign" style={inputStyle}
+                  onFocus={e => (e.target.style.borderColor = 'var(--text)')}
+                  onBlur={e => (e.target.style.borderColor = 'var(--border-strong)')} />
+              </div>
+              <div>
+                <label style={labelStyle}>Client Entity *</label>
+                <input required value={form.client_name} onChange={e => set('client_name', e.target.value)}
+                  placeholder="ACME Corp" style={inputStyle}
+                  onFocus={e => (e.target.style.borderColor = 'var(--text)')}
+                  onBlur={e => (e.target.style.borderColor = 'var(--border-strong)')} />
               </div>
             </div>
 
-            {/* Conditional fields */}
-            {form.pricing_type === 'fixed' ? (
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
               <div>
-                <label style={labelStyle}>Project Value (₹) *</label>
-                <input type="number" min={0} required value={form.total_value} onChange={e => set('total_value', +e.target.value)}
-                  style={inputStyle}
-                  onFocus={e => (e.target.style.borderColor = 'rgba(245,158,11,0.5)')}
-                  onBlur={e => (e.target.style.borderColor = 'var(--border2)')} />
+                <label style={labelStyle}>Categorization</label>
+                <select value={form.project_type} onChange={e => set('project_type', e.target.value)} style={{ ...inputStyle, cursor: 'pointer' }}>
+                  {['Design', 'Dev', 'Writing', 'Marketing', 'Other'].map(t => <option key={t} value={t}>{t}</option>)}
+                </select>
               </div>
-            ) : (
               <div>
-                <label style={labelStyle}>Hourly Rate (₹/hr) *</label>
-                <input type="number" min={0} required value={form.hourly_rate} onChange={e => set('hourly_rate', +e.target.value)}
-                  style={inputStyle}
-                  onFocus={e => (e.target.style.borderColor = 'rgba(245,158,11,0.5)')}
-                  onBlur={e => (e.target.style.borderColor = 'var(--border2)')} />
+                <label style={labelStyle}>Strategic Pricing</label>
+                <div style={{ display: 'flex', gap: 8, background: 'var(--surface-alt)', padding: 4, borderRadius: 12, border: '1px solid var(--border)' }}>
+                  {['fixed', 'hourly'].map(pt => (
+                    <button key={pt} type="button" onClick={() => set('pricing_type', pt)}
+                      style={{
+                        flex: 1, padding: '10px 0', borderRadius: 10, cursor: 'pointer',
+                        background: form.pricing_type === pt ? 'white' : 'transparent',
+                        border: 'none',
+                        boxShadow: form.pricing_type === pt ? '0 2px 8px rgba(0,0,0,0.05)' : 'none',
+                        color: form.pricing_type === pt ? 'var(--text)' : 'var(--text-dim)',
+                        fontFamily: 'Plus Jakarta Sans, sans-serif', fontWeight: 700, fontSize: 13, transition: 'all 0.3s cubic-bezier(0.16,1,0.3,1)',
+                      }}>
+                      {pt === 'fixed' ? 'Fixed Fee' : 'Hourly Rate'}
+                    </button>
+                  ))}
+                </div>
               </div>
-            )}
+            </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
+            <div style={{ borderTop: '1px solid var(--border)', paddingTop: 24 }}>
+              {form.pricing_type === 'fixed' ? (
+                <div>
+                  <label style={labelStyle}>Contract Value (₹) *</label>
+                  <div style={{ position: 'relative' }}>
+                    <div style={{ position: 'absolute', left: 16, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-dim)', fontWeight: 800 }}>₹</div>
+                    <input type="number" min={0} required value={form.total_value} onChange={e => set('total_value', +e.target.value)}
+                      style={{ ...inputStyle, paddingLeft: 36 }} />
+                  </div>
+                </div>
+              ) : (
+                <div>
+                  <label style={labelStyle}>Hourly Rate (₹/hr) *</label>
+                  <div style={{ position: 'relative' }}>
+                    <div style={{ position: 'absolute', left: 16, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-dim)', fontWeight: 800 }}>₹</div>
+                    <input type="number" min={0} required value={form.hourly_rate} onChange={e => set('hourly_rate', +e.target.value)}
+                      style={{ ...inputStyle, paddingLeft: 36 }} />
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 24 }}>
               <div>
-                <label style={labelStyle}>Estimated Hours</label>
+                <label style={labelStyle}>Estimated Scope (Hours)</label>
                 <input type="number" min={0} value={form.est_hours} onChange={e => set('est_hours', +e.target.value)}
-                  style={inputStyle}
-                  onFocus={e => (e.target.style.borderColor = 'rgba(245,158,11,0.5)')}
-                  onBlur={e => (e.target.style.borderColor = 'var(--border2)')} />
+                  style={inputStyle} />
               </div>
               <div>
-                <label style={labelStyle}>Min Rate (₹/hr)</label>
+                <label style={labelStyle}>Survival Threshold (₹/hr)</label>
                 <input type="number" min={0} value={form.threshold} onChange={e => set('threshold', +e.target.value)}
-                  style={inputStyle}
-                  onFocus={e => (e.target.style.borderColor = 'rgba(245,158,11,0.5)')}
-                  onBlur={e => (e.target.style.borderColor = 'var(--border2)')} />
+                  style={inputStyle} />
               </div>
             </div>
           </div>
 
           <motion.button
             type="submit" disabled={loading}
-            whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
+            whileHover={{ scale: 1.02, y: -2 }} whileTap={{ scale: 0.98 }}
+            className="stark-button"
             style={{
-              width: '100%', marginTop: 28, padding: '14px 0',
-              background: loading ? 'rgba(245,158,11,0.3)' : 'linear-gradient(135deg,#f59e0b,#d97706)',
-              border: 'none', borderRadius: 14, color: '#000',
-              fontFamily: 'Syne, sans-serif', fontWeight: 800, fontSize: 16,
-              cursor: loading ? 'not-allowed' : 'pointer',
+              width: '100%', marginTop: 40, padding: '20px 0',
+              justifyContent: 'center', fontSize: 16, borderRadius: 16,
+              background: loading ? 'var(--text-dim)' : 'var(--accent-stark)'
             }}
           >
-            {loading ? 'Creating...' : 'Create Project →'}
+            {loading ? 'Initializing...' : 'Commit Project Analysis'} <ArrowRight size={20} />
           </motion.button>
         </motion.form>
       </motion.div>

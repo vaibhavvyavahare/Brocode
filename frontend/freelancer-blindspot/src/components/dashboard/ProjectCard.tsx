@@ -1,11 +1,12 @@
 import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
-import { Clock, DollarSign, ArrowRight } from 'lucide-react'
+import { Clock, DollarSign, ArrowRight, Sparkles } from 'lucide-react'
 import type { ProjectWithStats } from '../../types'
 
 interface ProjectCardProps {
   project: ProjectWithStats
   delay?: number
+  onTriggerPIP?: (p: ProjectWithStats) => void
 }
 
 const riskColors = {
@@ -20,11 +21,16 @@ const clientRiskColors = {
   bad:   { color: '#d94343', label: '🚨 Bad Client'   },
 }
 
-export default function ProjectCard({ project, delay = 0 }: ProjectCardProps) {
+export default function ProjectCard({ project, delay = 0, onTriggerPIP }: ProjectCardProps) {
   const navigate = useNavigate()
   const rc  = riskColors[project.stats.riskLevel]
   const crc = clientRiskColors[project.clientRisk]
   const rateColor = rc.color
+
+  const handlePIP = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    onTriggerPIP?.(project)
+  }
 
   return (
     <motion.div
@@ -36,7 +42,7 @@ export default function ProjectCard({ project, delay = 0 }: ProjectCardProps) {
       style={{
         borderRadius: 24, padding: 28, cursor: 'pointer',
         position: 'relative', overflow: 'hidden',
-        background: 'var(--surface)',
+        background: 'white', border: '1px solid var(--border-strong)'
       }}
     >
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 20 }}>
@@ -57,7 +63,7 @@ export default function ProjectCard({ project, delay = 0 }: ProjectCardProps) {
           }}>
             {rc.label}
           </span>
-          <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 11, color: crc.color, fontWeight: 600 }}>
+          <span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 11, color: crc.color, fontWeight: 800 }}>
             {crc.label}
           </span>
         </div>
@@ -65,34 +71,33 @@ export default function ProjectCard({ project, delay = 0 }: ProjectCardProps) {
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 20, marginBottom: 24 }}>
         <div>
-          <div style={{ fontSize: 10, color: 'var(--text-dim)', fontFamily: 'JetBrains Mono, monospace', letterSpacing: 1.5, marginBottom: 6, fontWeight: 700 }}>RATE</div>
+          <div style={{ fontSize: 10, color: 'var(--text-dim)', fontFamily: 'JetBrains Mono, monospace', letterSpacing: 1.5, marginBottom: 6, fontWeight: 800, textTransform: 'uppercase' }}>REAL RATE</div>
           <div style={{ fontFamily: 'Outfit, sans-serif', fontWeight: 800, fontSize: 26, color: rateColor, lineHeight: 1 }}>
             ₹{Math.round(project.stats.effectiveRate).toLocaleString('en-IN')}
             <span style={{ fontSize: 12, fontWeight: 400, color: 'var(--text-dim)', marginLeft: 2 }}>/hr</span>
           </div>
         </div>
         <div>
-          <div style={{ fontSize: 10, color: 'var(--text-dim)', fontFamily: 'JetBrains Mono, monospace', letterSpacing: 1.5, marginBottom: 6, fontWeight: 700 }}>HOURS</div>
+          <div style={{ fontSize: 10, color: 'var(--text-dim)', fontFamily: 'JetBrains Mono, monospace', letterSpacing: 1.5, marginBottom: 6, fontWeight: 800, textTransform: 'uppercase' }}>TOTAL TIME</div>
           <div style={{ fontFamily: 'Outfit, sans-serif', fontWeight: 700, fontSize: 22, color: 'var(--text)' }}>
             {project.stats.totalHours.toFixed(1)}h
           </div>
         </div>
         <div>
-          <div style={{ fontSize: 10, color: 'var(--text-dim)', fontFamily: 'JetBrains Mono, monospace', letterSpacing: 1.5, marginBottom: 6, fontWeight: 700 }}>VALUE</div>
+          <div style={{ fontSize: 10, color: 'var(--text-dim)', fontFamily: 'JetBrains Mono, monospace', letterSpacing: 1.5, marginBottom: 6, fontWeight: 800, textTransform: 'uppercase' }}>EARNED</div>
           <div style={{ fontFamily: 'Outfit, sans-serif', fontWeight: 700, fontSize: 22, color: 'var(--text)' }}>
             ₹{(project.total_value / 1000).toFixed(0)}k
           </div>
         </div>
       </div>
 
-      {/* Progress bar: hours used vs estimated */}
-      {project.est_hours > 0 && (
-        <div style={{ background: 'var(--surface-alt)', padding: '12px 16px', borderRadius: 16, border: '1px solid var(--border)' }}>
+      <div style={{ display: 'flex', gap: 12, alignItems: 'center' }}>
+        <div style={{ flex: 1 }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8, fontSize: 11, fontFamily: 'Plus Jakarta Sans, sans-serif', color: 'var(--text-muted)', fontWeight: 600 }}>
             <span>Project usage</span>
             <span>{project.stats.totalHours.toFixed(1)} / {project.est_hours}h</span>
           </div>
-          <div style={{ height: 6, borderRadius: 3, background: 'rgba(0,0,0,0.05)', overflow: 'hidden' }}>
+          <div style={{ height: 6, borderRadius: 3, background: 'var(--surface-alt)', overflow: 'hidden', border: '1px solid var(--border)' }}>
             <motion.div
               initial={{ width: 0 }}
               animate={{ width: `${Math.min((project.stats.totalHours / project.est_hours) * 100, 100)}%` }}
@@ -101,17 +106,28 @@ export default function ProjectCard({ project, delay = 0 }: ProjectCardProps) {
             />
           </div>
         </div>
-      )}
+
+        {project.stats.riskLevel !== 'safe' && (
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={handlePIP}
+            style={{ 
+              background: 'var(--accent-stark)', color: 'white', border: 'none', 
+              borderRadius: 12, padding: '10px 16px', fontSize: 12, fontWeight: 800,
+              display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer',
+              fontFamily: 'Plus Jakarta Sans, sans-serif', boxShadow: '0 8px 16px rgba(0,0,0,0.1)'
+            }}
+          >
+            <Sparkles size={14} /> PIP
+          </motion.button>
+        )}
+      </div>
 
       <div style={{
-        position: 'absolute', bottom: 20, right: 20,
-        width: 36, height: 36, borderRadius: 12,
-        background: 'var(--surface-alt)', border: `1px solid var(--border)`,
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        color: 'var(--text-dim)',
-      }}>
-        <ArrowRight size={16} />
-      </div>
+        position: 'absolute', top: 28, right: 0,
+        width: 4, height: 40, background: rateColor, borderRadius: '4px 0 0 4px', opacity: 0.8
+      }} />
     </motion.div>
   )
 }

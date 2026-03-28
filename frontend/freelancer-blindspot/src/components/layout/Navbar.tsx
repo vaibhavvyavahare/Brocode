@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useNavigate, useLocation } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { LayoutDashboard, Puzzle, ExternalLink, Menu, X } from 'lucide-react'
+import { LayoutDashboard, Puzzle, ExternalLink, Menu, X, Plus } from 'lucide-react'
 
 const NAV_ITEMS = [
   { icon: LayoutDashboard, label: 'Dashboard', path: '/app' },
@@ -23,103 +23,115 @@ export default function Navbar({ onNewProject }: NavbarProps) {
       animate={{ x: 0, opacity: 1 }}
       transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
       style={{
-        width: collapsed ? 72 : 240,
+        width: collapsed ? 88 : 260,
         minHeight: '100vh',
-        background: 'rgba(11,11,22,0.9)',
-        backdropFilter: 'blur(24px)',
+        background: 'rgba(255, 255, 255, 0.4)',
+        backdropFilter: 'blur(32px)',
         borderRight: '1px solid var(--border)',
         display: 'flex', flexDirection: 'column',
-        padding: '24px 0', position: 'sticky', top: 0,
-        flexShrink: 0, zIndex: 50,
-        transition: 'width 0.3s cubic-bezier(0.16,1,0.3,1)',
+        padding: '32px 0', position: 'sticky', top: 0,
+        flexShrink: 0, zIndex: 100,
+        transition: 'width 0.4s cubic-bezier(0.16,1,0.3,1)',
       }}
     >
-      {/* Logo */}
-      <div style={{ padding: '0 20px 28px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: collapsed ? 'center' : 'space-between' }}>
+      {/* Logo Section */}
+      <div style={{ padding: '0 24px 32px', marginBottom: 12, display: 'flex', alignItems: 'center', justifyContent: collapsed ? 'center' : 'space-between' }}>
         {!collapsed && (
           <div>
-            <div style={{
-              width: 36, height: 36, borderRadius: 10,
-              background: 'linear-gradient(135deg,#f59e0b,#a855f7)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontFamily: 'Syne, sans-serif', fontWeight: 800, fontSize: 18, color: '#000',
-              marginBottom: 8,
-            }}>B</div>
-            <div style={{ fontFamily: 'Syne, sans-serif', fontWeight: 700, fontSize: 16 }}>BlindSpot</div>
-            <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, color: 'var(--muted)', letterSpacing: 1 }}>ASTIVA 2025</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
+               <div style={{ 
+                 width: 32, height: 32, borderRadius: 8, 
+                 background: 'var(--accent-stark)', color: 'white',
+                 display: 'flex', alignItems: 'center', justifyContent: 'center',
+                 fontSize: 18, fontWeight: 900
+               }}>B</div>
+               <span className="font-serif" style={{ fontSize: 20, fontWeight: 800 }}>BlindSpot</span>
+            </div>
+            <div style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 10, color: 'var(--text-dim)', letterSpacing: 1.5, fontWeight: 700 }}>ASTIVA 2025</div>
           </div>
         )}
         <button
           onClick={() => setCollapsed(c => !c)}
-          style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid var(--border)', borderRadius: 8, padding: 6, color: 'var(--text2)', cursor: 'pointer', flexShrink: 0 }}
+          style={{ 
+            background: 'var(--surface-alt)', border: '1px solid var(--border)', 
+            borderRadius: 12, width: 32, height: 32, display: 'flex', 
+            alignItems: 'center', justifyContent: 'center', cursor: 'pointer',
+            color: 'var(--text-muted)'
+          }}
         >
           {collapsed ? <Menu size={16} /> : <X size={16} />}
         </button>
       </div>
 
-      {/* Nav links */}
-      <div style={{ flex: 1, padding: '20px 12px', display: 'flex', flexDirection: 'column', gap: 4 }}>
+      {/* Navigation */}
+      <div style={{ flex: 1, padding: '0 16px', display: 'flex', flexDirection: 'column', gap: 6 }}>
+        {!collapsed && (
+          <div style={{ padding: '0 12px 12px', fontSize: 10, fontWeight: 800, color: 'var(--text-dim)', letterSpacing: 2, fontFamily: 'JetBrains Mono, monospace' }}>
+            PRINCIPAL NAVIGATION
+          </div>
+        )}
         {NAV_ITEMS.map(item => {
           const active = location.pathname === item.path
           const Icon = item.icon
           return (
             <motion.button
               key={item.path}
-              whileHover={{ x: collapsed ? 0 : 4 }}
+              whileHover={{ x: collapsed ? 0 : 4, background: 'rgba(0,0,0,0.03)' }}
               onClick={() => navigate(item.path)}
-              title={collapsed ? item.label : undefined}
               style={{
                 display: 'flex', alignItems: 'center', gap: 12,
-                padding: collapsed ? '11px' : '11px 14px',
-                borderRadius: 12, cursor: 'pointer', border: 'none',
-                background: active ? 'rgba(245,158,11,0.12)' : 'transparent',
-                color: active ? '#f59e0b' : 'var(--text2)',
-                fontFamily: 'Syne, sans-serif', fontWeight: 600, fontSize: 14,
+                padding: '12px 14px',
+                borderRadius: 14, cursor: 'pointer', border: 'none',
+                background: active ? 'rgba(0,0,0,0.05)' : 'transparent',
+                color: active ? 'var(--text)' : 'var(--text-muted)',
+                fontFamily: 'Plus Jakarta Sans, sans-serif', fontWeight: active ? 700 : 600, fontSize: 14,
                 transition: 'all 0.2s', justifyContent: collapsed ? 'center' : 'flex-start',
-                borderLeft: active ? '2px solid #f59e0b' : '2px solid transparent',
+                position: 'relative'
               }}
             >
-              <Icon size={18} />
+              <Icon size={18} strokeWidth={active ? 2.5 : 2} />
               {!collapsed && <span>{item.label}</span>}
+              {active && !collapsed && (
+                <motion.div layoutId="nav-pill" style={{ position: 'absolute', left: 0, width: 4, height: 20, background: 'var(--accent)', borderRadius: '0 4px 4px 0' }} />
+              )}
             </motion.button>
           )
         })}
       </div>
 
-      {/* New project CTA */}
+      {/* New Project CTA */}
       {onNewProject && (
-        <div style={{ padding: '0 12px 20px' }}>
+        <div style={{ padding: '0 16px 24px' }}>
           <motion.button
-            whileHover={{ scale: 1.02 }}
+            whileHover={{ scale: 1.02, y: -2 }}
             whileTap={{ scale: 0.98 }}
             onClick={onNewProject}
+            className="stark-button"
             style={{
-              width: '100%', padding: collapsed ? '11px' : '12px',
-              background: 'linear-gradient(135deg,#f59e0b,#d97706)',
-              border: 'none', borderRadius: 12, color: '#000',
-              fontFamily: 'Syne, sans-serif', fontWeight: 700, fontSize: 14,
-              cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+              width: '100%', padding: collapsed ? '14px' : '14px',
+              justifyContent: 'center', fontSize: 14, borderRadius: 16
             }}
           >
-            <span style={{ fontSize: 16 }}>+</span>
+            <Plus size={18} strokeWidth={3} />
             {!collapsed && 'New Project'}
           </motion.button>
         </div>
       )}
 
-      {/* Back to landing */}
-      <div style={{ padding: '0 12px', borderTop: '1px solid var(--border)', paddingTop: 16 }}>
+      {/* Bottom Actions */}
+      <div style={{ padding: '24px 16px 0', borderTop: '1px solid var(--border)' }}>
         <button
           onClick={() => navigate('/')}
           style={{
-            display: 'flex', alignItems: 'center', gap: 10,
-            padding: '10px 14px', borderRadius: 12, cursor: 'pointer',
+            display: 'flex', alignItems: 'center', gap: 12,
+            padding: '12px 14px', borderRadius: 14, cursor: 'pointer',
             background: 'transparent', border: 'none',
-            color: 'var(--muted)', fontFamily: 'Inter, sans-serif', fontSize: 13,
+            color: 'var(--text-dim)', fontFamily: 'Plus Jakarta Sans, sans-serif', 
+            fontWeight: 600, fontSize: 13,
             width: '100%', justifyContent: collapsed ? 'center' : 'flex-start',
           }}
         >
-          <ExternalLink size={14} />
+          <ExternalLink size={16} />
           {!collapsed && 'Landing Page'}
         </button>
       </div>

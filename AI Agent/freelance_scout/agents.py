@@ -5,20 +5,19 @@ from crewai_tools import SerperDevTool, ScrapeWebsiteTool
 search_tool = SerperDevTool()
 scrape_tool = ScrapeWebsiteTool()
 
-# Groq free tier: 30 RPM, 14,400 req/day — far more generous than Gemini free tier
-# Sign up at https://console.groq.com to get your free key
+# Use Llama 3.3 70B - Reliable and currently stable on Groq
 groq_llm = LLM(
     model="groq/llama-3.3-70b-versatile",
     api_key=os.environ.get("GROQ_API_KEY"),
-    max_retries=5,
-    timeout=120,  # 2 min timeout — allows retry after 429 backoff
+    max_retries=10,
+    timeout=120,
 )
 
 def create_job_scraper_agent() -> Agent:
     return Agent(
         role="Freelance Platforms Scraper",
-        goal="Search strictly on freelance sites (Upwork, Fiverr, Freelancer, Toptal, etc.) for projects matching {topic}. NEVER search LinkedIn or traditional corporate job boards.",
-        backstory="An expert web scraper who specializes in finding real, immediate freelance projects. You systematically bypass corporate job boards like LinkedIn and focus entirely on marketplace platforms where freelancers bid on gigs.",
+        goal="Find specific freelance projects on Upwork, Fiverr, or Freelancer.com for {topic}.",
+        backstory="An expert freelancer. You use search tools to find current project URLs. Use simple queries.",
         tools=[search_tool, scrape_tool],
         llm=groq_llm,
         verbose=True,
@@ -28,8 +27,8 @@ def create_job_scraper_agent() -> Agent:
 def create_data_extractor_agent() -> Agent:
     return Agent(
         role="Project Data Extractor",
-        goal="Extract precise details: project ID, name, bid/budget, URL, and platform from the raw scraped freelance postings.",
-        backstory="A meticulous data entry expert. You read raw job descriptions and perfectly format the core parameters into clean structured fields. You never hallucinate data; if an ID is missing, you generate a placeholder like 'UPWK-1234'.",
+        goal="Extract project details: ID, name, bid, URL, and platform.",
+        backstory="A detail-oriented data entry specialist.",
         llm=groq_llm,
         verbose=True,
         allow_delegation=False
@@ -38,8 +37,8 @@ def create_data_extractor_agent() -> Agent:
 def create_skill_matcher_agent() -> Agent:
     return Agent(
         role="Skill Filter & JSON Formatter",
-        goal="Filter the projects to ensure they require {skills}. Format the final authorized list as strict JSON.",
-        backstory="A tech-savvy freelance QA manager who ensures all fetched prospects stringently match software development (React, Python) and AI Automation skills.",
+        goal="Filter projects for {skills} and output valid JSON.",
+        backstory="A technical recruiter specializing in React and Python.",
         llm=groq_llm,
         verbose=True,
         allow_delegation=False

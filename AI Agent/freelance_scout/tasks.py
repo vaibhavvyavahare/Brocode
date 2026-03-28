@@ -3,10 +3,9 @@ from models import ProjectList
 
 def create_scrape_task(agent, topic):
     return Task(
-        description=f"Search exclusively on freelance marketplaces (Upwork, Fiverr, Freelancer.com, Guru, etc.) for '{topic}'.\n"
-                    f"DO NOT include LinkedIn jobs or full-time salaried employee boards. Look ONLY for short-term freelance contracts or project bids.\n"
-                    f"Gather the raw text and URLs for at least 3 distinct projects.",
-        expected_output="Raw text containing multiple freelance projects from platforms like Upwork and Fiverr.",
+        description=f"Search exclusively on freelance marketplaces (Upwork, Fiverr) for '{topic}'.\n"
+                    f"Look ONLY for quick project bids. Gather raw text for 2 distinct projects.",
+        expected_output="Raw text for 2 freelance projects.",
         agent=agent
     )
 

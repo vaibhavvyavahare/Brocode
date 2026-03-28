@@ -1,107 +1,8 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { motion, useScroll, useTransform, useSpring } from 'framer-motion'
+import { motion, useScroll, useTransform } from 'framer-motion'
 import Lenis from '@studio-freight/lenis'
-import { Canvas, useFrame, useThree } from '@react-three/fiber'
-import { Html, Float, Environment } from '@react-three/drei'
-import * as THREE from 'three'
 import { ArrowRight, Target, Sparkles, Layout, MousePointer2, Quote, Zap, Shield, TrendingUp } from 'lucide-react'
-
-// ─────────────────────────────────────────────────────────────────────────────
-// 3D ORB (spec-compliant: camera [0,0,8], fov 45, exact rotation/scale math)
-// ─────────────────────────────────────────────────────────────────────────────
-function OrbScene({ scrollFactor, mouse }: { scrollFactor: number; mouse: { x: number; y: number } }) {
-  const meshRef  = useRef<THREE.Mesh>(null)
-  const groupRef = useRef<THREE.Group>(null)
-  const ring1    = useRef<THREE.Mesh>(null)
-  const ring2    = useRef<THREE.Mesh>(null)
-  const ring3    = useRef<THREE.Mesh>(null)
-  const { viewport } = useThree()
-
-  useFrame((_state, delta) => {
-    if (!meshRef.current || !groupRef.current) return
-
-    // Spec §7 exact formulas
-    const intensity = 1 + scrollFactor * 2
-    meshRef.current.rotation.y  += 0.3 * delta * intensity
-    meshRef.current.rotation.x   = 0.2 + scrollFactor * 0.8 + mouse.y * 0.15
-    meshRef.current.rotation.z  += mouse.x * 0.05
-
-    const baseScale = Math.min(viewport.width / 4, viewport.height / 4, 1.3)
-    const scale     = baseScale + scrollFactor * 2.5
-    meshRef.current.scale.setScalar(scale)
-
-    groupRef.current.position.y  = -scrollFactor * 3
-    groupRef.current.position.x  =  scrollFactor * 1
-
-    // Rings animate independently
-    if (ring1.current) ring1.current.rotation.z += delta * 0.4
-    if (ring2.current) ring2.current.rotation.x += delta * 0.25
-    if (ring3.current) ring3.current.rotation.y += delta * 0.18
-  })
-
-  return (
-    <group ref={groupRef}>
-      {/* Lights — spec §7 */}
-      <pointLight position={[5, 5, 5]}   color="#d4af37" intensity={160} />
-      <pointLight position={[-5, -5, -5]} color="#ffffff" intensity={80} />
-      <ambientLight intensity={1.2} />
-
-      {/* Main orb */}
-      <mesh ref={meshRef}>
-        <sphereGeometry args={[1.8, 64, 64]} />
-        <meshStandardMaterial
-          color="#1a1a1a"
-          metalness={0.95}
-          roughness={0.05}
-          envMapIntensity={2}
-        />
-
-        {/* Floating labels — spec §8 */}
-        {[
-          { pos: [-2.6, -0.4, 0] as [number,number,number], label: 'Growth'      },
-          { pos: [ 2.6,  0.5, 0] as [number,number,number], label: 'Strategy'    },
-          { pos: [ 0,   -2.5, 1] as [number,number,number], label: 'Content'     },
-          { pos: [ 0,    2.5,-1] as [number,number,number], label: 'Performance' },
-        ].map(({ pos, label }) => (
-          <Html key={label} position={pos} center>
-            <div style={{
-              padding: '4px 10px',
-              background: 'rgba(255,255,255,0.06)',
-              backdropFilter: 'blur(8px)',
-              border: '1px solid rgba(196,168,89,0.3)',
-              borderRadius: 999,
-              whiteSpace: 'nowrap',
-              fontFamily: '"JetBrains Mono", monospace',
-              fontSize: '9px',
-              fontWeight: 700,
-              letterSpacing: '0.25em',
-              color: '#c5a059',
-              textTransform: 'uppercase',
-              opacity: 0.75,
-            }}>
-              {label}
-            </div>
-          </Html>
-        ))}
-      </mesh>
-
-      {/* Orbital rings — spec §7 (3 torus, gold tones, low opacity) */}
-      <mesh ref={ring1} rotation={[0, 0, 0]}>
-        <torusGeometry args={[2.4, 0.006, 16, 200]} />
-        <meshStandardMaterial color="#d4af37" opacity={0.25} transparent metalness={1} roughness={0} />
-      </mesh>
-      <mesh ref={ring2} rotation={[Math.PI / 3, 0, 0]}>
-        <torusGeometry args={[2.2, 0.004, 16, 200]} />
-        <meshStandardMaterial color="#c5a059" opacity={0.18} transparent metalness={1} roughness={0} />
-      </mesh>
-      <mesh ref={ring3} rotation={[0, Math.PI / 4, 0]}>
-        <torusGeometry args={[2.0, 0.003, 16, 200]} />
-        <meshStandardMaterial color="#8a6b1f" opacity={0.15} transparent metalness={1} roughness={0} />
-      </mesh>
-    </group>
-  )
-}
 
 // ─────────────────────────────────────────────────────────────────────────────
 // SPLIT TEXT — word-by-word stagger (spec §9)
@@ -137,28 +38,6 @@ function SplitHeadline({ text, style }: { text: string; style?: React.CSSPropert
 // ─────────────────────────────────────────────────────────────────────────────
 export default function LandingPage() {
   const navigate = useNavigate()
-  const [scrollFactor, setScrollFactor]   = useState(0)
-  const [mouse, setMouse]                 = useState({ x: 0, y: 0 })
-
-  // Spec §6 scroll math
-  useEffect(() => {
-    const clamp = (v: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, v))
-    const onScroll = () => setScrollFactor(clamp(window.scrollY / 1000, 0, 1))
-    window.addEventListener('scroll', onScroll, { passive: true })
-    return () => window.removeEventListener('scroll', onScroll)
-  }, [])
-
-  // Mouse tracking for orb
-  useEffect(() => {
-    const onMove = (e: MouseEvent) => {
-      setMouse({
-        x: (e.clientX / window.innerWidth  - 0.5) * 2,
-        y: (e.clientY / window.innerHeight - 0.5) * 2,
-      })
-    }
-    window.addEventListener('mousemove', onMove)
-    return () => window.removeEventListener('mousemove', onMove)
-  }, [])
 
   // Lenis smooth scroll (spec §11: lerp 0.1)
   useEffect(() => {
@@ -184,15 +63,14 @@ export default function LandingPage() {
 
       {/* ── BACKGROUND PARALLAX BLOBS (spec §10) ───────────────────────── */}
       <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
-        <motion.div style={{ y: y1, rotate: rot1 }} className="absolute -top-40 -left-40 w-[700px] h-[700px] rounded-full opacity-[0.07]"
-          css={{ background: 'radial-gradient(circle, #c5a059 0%, transparent 70%)' }}
+        <motion.div style={{ y: y1, rotate: rot1 }} className="absolute -top-40 -left-40 w-175 h-175 rounded-full opacity-[0.07]"
         >
           <div style={{ width:'100%', height:'100%', borderRadius:'50%', background:'radial-gradient(circle, #c5a059 0%, transparent 70%)' }} />
         </motion.div>
-        <motion.div style={{ y: y2, rotate: rot2 }} className="absolute top-1/3 -right-60 w-[600px] h-[600px] rounded-full opacity-[0.05]">
+        <motion.div style={{ y: y2, rotate: rot2 }} className="absolute top-1/3 -right-60 w-150 h-150 rounded-full opacity-[0.05]">
           <div style={{ width:'100%', height:'100%', borderRadius:'50%', background:'radial-gradient(circle, #8a6b1f 0%, transparent 70%)' }} />
         </motion.div>
-        <motion.div style={{ y: y1 }} className="absolute -bottom-20 left-1/3 w-[500px] h-[500px] rounded-full opacity-[0.04]">
+        <motion.div style={{ y: y1 }} className="absolute -bottom-20 left-1/3 w-125 h-125 rounded-full opacity-[0.04]">
           <div style={{ width:'100%', height:'100%', borderRadius:'50%', background:'radial-gradient(circle, #d4af37 0%, transparent 70%)' }} />
         </motion.div>
       </div>
@@ -202,14 +80,14 @@ export default function LandingPage() {
         style={{ background: 'radial-gradient(ellipse 85% 85% at 50% 50%, transparent 35%, rgba(90,110,160,0.14) 100%)' }} />
 
       {/* ── NOISE ──────────────────────────────────────────────────────── */}
-      <div className="fixed inset-0 z-[1] pointer-events-none opacity-[0.025]"
+      <div className="fixed inset-0 z-1 pointer-events-none opacity-[0.025]"
         style={{ backgroundImage:`url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")` }}
       />
 
       {/* ══════════════════════════════════════════════════════════════════
           FIXED PILL NAVBAR
       ══════════════════════════════════════════════════════════════════ */}
-      <header className="fixed top-0 left-0 right-0 z-[100] flex justify-center px-6 pt-5">
+      <header className="fixed top-0 left-0 right-0 z-100 flex justify-center px-6 pt-5">
         <nav style={{
           width:'100%', maxWidth:960,
           padding:'14px 28px',
@@ -240,77 +118,67 @@ export default function LandingPage() {
       </header>
 
       {/* ══════════════════════════════════════════════════════════════════
-          HERO — Fixed 3D canvas behind, content overlay on top
-          spec §5: relative, min-height 120vh
+          HERO — Minimal, professional, no 3D orb
       ══════════════════════════════════════════════════════════════════ */}
-      <section style={{ position:'relative', minHeight:'120vh', overflowX:'hidden' }}>
-
-        {/* Fixed 3D visual layer — spec §5: fixed, z below content, pointer-events none except canvas */}
-        <div style={{ position:'fixed', inset:0, zIndex:2, pointerEvents:'none' }}>
-          <Canvas
-            camera={{ position:[0,0,8], fov:45 }}
-            dpr={[1,2]}
-            gl={{ antialias:true, alpha:true }}
-            style={{ pointerEvents:'auto' }}
-          >
-            <Environment preset="city" blur={0.8} />
-            <Float speed={1.5} rotationIntensity={0.1} floatIntensity={0.15}>
-              <OrbScene scrollFactor={scrollFactor} mouse={mouse} />
-            </Float>
-          </Canvas>
-          {/* Top + bottom gradient fades over canvas */}
-          <div style={{ position:'absolute', top:0, left:0, right:0, height:140, background:'linear-gradient(to bottom, #f5f3ef 0%, transparent 100%)', pointerEvents:'none' }} />
-          <div style={{ position:'absolute', bottom:0, left:0, right:0, height:320, background:'linear-gradient(to top, #f5f3ef 0%, transparent 100%)', pointerEvents:'none' }} />
-        </div>
-
-        {/* Content overlay — spec §5: relative, z above visual layer */}
-        {/* BLOCK 1: full-viewport-height block to center title over orb */}
-        <div style={{ position:'relative', zIndex:10, height:'100vh', display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', paddingTop:80, pointerEvents:'none' }}>
-          <motion.div style={{ opacity: heroOpacity, scale: heroScale }} className="flex flex-col items-center text-center">
-            {/* Eyebrow */}
-            <div style={{ display:'flex', alignItems:'center', gap:16, marginBottom:40 }}>
-              <div style={{ width:32, height:1, background:'rgba(196,168,89,0.5)' }} />
-              <span style={{ fontFamily:'"JetBrains Mono",monospace', fontSize:10, fontWeight:800, letterSpacing:'0.45em', color:'rgba(196,168,89,0.8)', textTransform:'uppercase' }}>
-                Elite Freelance Intelligence
+      <section style={{ position:'relative', minHeight:'92vh', overflowX:'hidden', padding:'140px 24px 90px' }}>
+        <motion.div
+          style={{ opacity: heroOpacity, scale: heroScale, maxWidth: 1100, margin: '0 auto' }}
+          initial={{ opacity: 0, y: 18 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <div style={{
+            borderRadius: 36,
+            border: '1px solid rgba(17,17,17,0.08)',
+            background: 'linear-gradient(145deg, rgba(255,255,255,0.95) 0%, rgba(247,243,236,0.92) 100%)',
+            boxShadow: '0 16px 60px rgba(17,17,17,0.08)',
+            padding: '56px clamp(26px, 4vw, 64px)'
+          }}>
+            <div style={{ display:'flex', alignItems:'center', gap:12, marginBottom:24 }}>
+              <div style={{ width:10, height:10, borderRadius:'50%', background:'#c5a059' }} />
+              <span style={{ fontFamily:'"JetBrains Mono",monospace', fontSize:10, fontWeight:800, letterSpacing:'0.28em', color:'rgba(17,17,17,0.5)', textTransform:'uppercase' }}>
+                Freelance Margin Intelligence
               </span>
-              <div style={{ width:32, height:1, background:'rgba(196,168,89,0.5)' }} />
             </div>
 
-            {/* Headline — white for contrast over the dark 3D orb */}
             <SplitHeadline
-              text="Stop working for free."
+              text="Protect your time. Raise your profit."
               style={{
                 fontFamily:'"Fraunces",serif',
-                fontSize:'clamp(4rem,12vw,10rem)',
-                fontWeight:900,
-                lineHeight:0.88,
-                letterSpacing:'-0.05em',
-                color:'#ffffff',
-                textShadow:'0 2px 40px rgba(0,0,0,0.4)',
-                textAlign:'center',
-                pointerEvents:'none',
+                fontSize:'clamp(2.4rem, 6vw, 5.8rem)',
+                fontWeight:800,
+                lineHeight:0.95,
+                letterSpacing:'-0.03em',
+                color:'#111',
               }}
             />
 
-            {/* CTA button — pointer-events auto so it's clickable */}
-            <div style={{ display:'flex', gap:14, marginTop:56, pointerEvents:'auto' }}>
-              <button onClick={() => navigate('/app')}
-                style={{ padding:'14px 36px', background:'#111', border:'none', borderRadius:999, color:'white', fontFamily:'"Plus Jakarta Sans",sans-serif', fontSize:13, fontWeight:700, letterSpacing:'0.1em', textTransform:'uppercase', cursor:'pointer', boxShadow:'0 8px 32px rgba(0,0,0,0.35)', transition:'all 0.25s' }}
-                onMouseEnter={e=>{ const b=e.currentTarget as HTMLButtonElement; b.style.background='#c5a059'; b.style.transform='scale(1.04)' }}
-                onMouseLeave={e=>{ const b=e.currentTarget as HTMLButtonElement; b.style.background='#111'; b.style.transform='scale(1)' }}
-              >Start Your Imperium</button>
-            </div>
-              </div>
-              <span style={{ fontFamily:'"JetBrains Mono",monospace', fontSize:9, fontWeight:800, letterSpacing:'0.35em', color:'rgba(17,17,17,0.25)', textTransform:'uppercase' }}>TRUSTED BY</span>
-            </div>
-          </motion.div>
-        </div>
+            <p style={{
+              marginTop: 22,
+              maxWidth: 720,
+              fontFamily:'"Plus Jakarta Sans",sans-serif',
+              fontSize:'clamp(1rem, 1.8vw, 1.15rem)',
+              color:'rgba(17,17,17,0.62)',
+              lineHeight:1.75
+            }}>
+              BlindSpot helps independent professionals detect hidden non-billable leakage,
+              measure effective hourly rate, and generate strategic client plans with clear, data-backed actions.
+            </p>
 
-        {/* BLOCK 2: scroll cue visible at bottom of hero — pulled up with negative margin (spec §5) */}
-        <div style={{ position:'relative', zIndex:10, display:'flex', flexDirection:'column', alignItems:'center', gap:10, marginTop:-80, paddingBottom:60, pointerEvents:'none', opacity:0.3 }}>
-          <motion.div animate={{ y:[0,10,0] }} transition={{ duration:2, repeat:Infinity, ease:'easeInOut' }} style={{ width:1, height:64, background:'#111' }} />
-          <span style={{ fontFamily:'"JetBrains Mono",monospace', fontSize:9, fontWeight:800, letterSpacing:'0.35em', color:'#111', textTransform:'uppercase' }}>SCROLL</span>
-        </div>
+            <div style={{ display:'flex', gap:12, flexWrap:'wrap', marginTop:32 }}>
+              <button
+                onClick={() => navigate('/app')}
+                style={{ padding:'14px 30px', background:'#111', border:'none', borderRadius:999, color:'white', fontFamily:'"Plus Jakarta Sans",sans-serif', fontSize:13, fontWeight:700, letterSpacing:'0.1em', textTransform:'uppercase', cursor:'pointer', transition:'all 0.2s' }}
+                onMouseEnter={e=>{ const b=e.currentTarget as HTMLButtonElement; b.style.transform='translateY(-1px)' }}
+                onMouseLeave={e=>{ const b=e.currentTarget as HTMLButtonElement; b.style.transform='translateY(0)' }}
+              >Open Dashboard</button>
+              <a
+                href="#pip-engine"
+                style={{ padding:'13px 28px', border:'1px solid rgba(17,17,17,0.18)', borderRadius:999, color:'#111', fontFamily:'"Plus Jakarta Sans",sans-serif', fontSize:13, fontWeight:700, letterSpacing:'0.08em', textTransform:'uppercase', textDecoration:'none', display:'inline-flex', alignItems:'center', justifyContent:'center' }}
+              >View Features</a>
+            </div>
+          </div>
+        </motion.div>
       </section>
 
       {/* ══════════════════════════════════════════════════════════════════
@@ -373,7 +241,7 @@ export default function LandingPage() {
         </section>
 
         {/* ── PIP ENGINE ────────────────────────────────────────────── */}
-        <section style={{ padding:'100px 24px', background:'white', borderRadius:60, margin:'40px 0' }}>
+        <section id="pip-engine" style={{ padding:'100px 24px', background:'white', borderRadius:60, margin:'40px 0' }}>
           <div style={{ maxWidth:1280, margin:'0 auto' }}>
             <div style={{ display:'flex', alignItems:'center', gap:16, justifyContent:'center', marginBottom:48, color:'rgba(0,0,0,0.15)' }}>
               <Sparkles size={20} />

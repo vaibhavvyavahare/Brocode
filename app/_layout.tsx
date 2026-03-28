@@ -3,7 +3,19 @@ import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { useFonts } from 'expo-font';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { View, StyleSheet, StatusBar } from 'react-native';
+import { View, StyleSheet, StatusBar, Platform, TextInput } from 'react-native';
+
+if (Platform.OS === 'web') {
+  // @ts-ignore
+  if (!TextInput.State) {
+    // @ts-ignore
+    TextInput.State = {};
+  }
+  // @ts-ignore
+  TextInput.State.currentlyFocusedInput = TextInput.State.currentlyFocusedInput || (() => null);
+  // @ts-ignore
+  TextInput.State.currentlyFocusedField = TextInput.State.currentlyFocusedField || (() => null);
+}
 import { COLORS } from '../constants/theme';
 import FloatingTimer from '../components/FloatingTimer';
 import {

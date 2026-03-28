@@ -4,6 +4,7 @@ import { useRouter } from 'expo-router';
 import { Project, getProjects } from '../../services/projectService';
 import { Session, getAllSessions } from '../../services/sessionService';
 import { useGlobalStore } from '../../stores/globalStore';
+import { useTimerStore } from '../../stores/timerStore';
 import { COLORS } from '../../constants/theme';
 import ProjectCard from '../../components/ProjectCard';
 import CreateProjectSheet from '../../components/CreateProjectSheet';
@@ -14,7 +15,8 @@ const SORTS = ['By Rate', 'By Hours', 'By Value', 'By Date'];
 
 export default function ProjectsScreen() {
   const router = useRouter();
-  const { rateFloor } = useGlobalStore();
+  const { rateFloor, refreshTrigger } = useGlobalStore();
+  const startTimer = useTimerStore(s => s.startTimer);
 
   const [projects, setProjects] = useState<Project[]>([]);
   const [sessions, setSessions] = useState<Session[]>([]);
@@ -41,19 +43,22 @@ export default function ProjectsScreen() {
     setRefreshing(false);
   }, []);
 
-  useEffect(() => { loadData(); }, []);
+  useEffect(() => { loadData(); }, [refreshTrigger]);
 
   const totalEarned = projects.reduce((sum, p) => {
     if (p.model === 'fixed') return sum + p.price;
-    const pSessions = sessions.filter(s => s.projectId === p.id && s.type === 'billable');
-    return sum + pSessions.reduce((h, s) => h + s.hours, 0) * p.hourlyRate;
+    const pSessions = sessions.filter(s => s.projectId === p.id);
+    const pBillable = pSessions.filter(s => s.type === 'billable').reduce((h, s) => h + s.hours, 0);
+    const pNonBillable = pSessions.filter(s => s.type === 'nonbillable').reduce((h, s) => h + s.hours, 0);
+    return sum + (pBillable * p.hourlyRate);
   }, 0);
 
   const projectStats = projects.map(p => {
     const pSessions = sessions.filter(s => s.projectId === p.id);
     const pTotal = pSessions.reduce((sum, s) => sum + s.hours, 0);
     const pBillable = pSessions.filter(s => s.type === 'billable').reduce((sum, s) => sum + s.hours, 0);
-    const pValue = p.model === 'fixed' ? p.price : pBillable * p.hourlyRate;
+    const pNonBillable = pTotal - pBillable;
+    const pValue = p.model === 'fixed' ? p.price : (pBillable * p.hourlyRate);
     const effectiveRate = pTotal > 0 ? pValue / pTotal : (p.model === 'hourly' ? p.hourlyRate : 0);
     return { ...p, effectiveRate, totalValue: pValue, totalHours: pTotal, sessions: pSessions };
   });
@@ -120,6 +125,8 @@ export default function ProjectsScreen() {
               sessions={p.sessions}
               rateFloor={rateFloor}
               onPress={() => router.push(`/project/${p.id}`)}
+              onStartTimer={(e) => { e?.stopPropagation(); startTimer(p.id, p.title, 'billable'); }}
+              onMeet={(e) => { e?.stopPropagation(); router.push(`/project/${p.id}`); }}
             />
           ))}
           {filteredProjects.length === 0 && (

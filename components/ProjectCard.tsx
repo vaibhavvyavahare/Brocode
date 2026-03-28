@@ -10,16 +10,17 @@ interface ProjectCardProps {
   sessions: any[];
   rateFloor: number;
   onPress: () => void;
-  onStartTimer?: () => void;
+  onStartTimer?: (e: any) => void;
+  onMeet?: (e: any) => void;
 }
 
-export default function ProjectCard({ project, sessions, rateFloor, onPress, onStartTimer }: ProjectCardProps) {
+export default function ProjectCard({ project, sessions, rateFloor, onPress, onStartTimer, onMeet }: ProjectCardProps) {
   const totalHours = sessions.reduce((sum, s) => sum + s.hours, 0);
   const billableHours = sessions.filter(s => s.type === 'billable').reduce((sum, s) => sum + s.hours, 0);
   const nonBillableHours = totalHours - billableHours;
 
   let effectiveRate = 0;
-  let totalValue = project.model === 'fixed' ? project.price : billableHours * project.hourlyRate;
+  let totalValue = project.model === 'fixed' ? project.price : (billableHours * project.hourlyRate);
 
   if (totalHours > 0) {
     effectiveRate = totalValue / totalHours;
@@ -88,7 +89,7 @@ export default function ProjectCard({ project, sessions, rateFloor, onPress, onS
           <Text style={styles.btnPrimaryText}>Start Work</Text>
         </Pressable>
         {project.meetUrl && (
-          <Pressable style={styles.btnSecondary}>
+          <Pressable style={styles.btnSecondary} onPress={onMeet}>
             <Video size={14} color={COLORS.goldDark} />
             <Text style={styles.btnSecondaryText}>Meet</Text>
           </Pressable>

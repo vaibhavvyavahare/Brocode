@@ -68,7 +68,8 @@ export default function BillablePieChart({ billableHours, nonBillableHours }: Bi
             strokeDashoffset={circumference * billableRatio}
             strokeLinecap="round"
             rotation={-90 + billableRatio * 360}
-            origin={`${size / 2}, ${size / 2}`}
+            originX={size / 2}
+            originY={size / 2}
           />
           {/* Billable arc (near-black, drawn first = below) */}
           <AnimatedCircle
@@ -82,7 +83,8 @@ export default function BillablePieChart({ billableHours, nonBillableHours }: Bi
             animatedProps={billableProps}
             strokeLinecap="round"
             rotation={-90}
-            origin={`${size / 2}, ${size / 2}`}
+            originX={size / 2}
+            originY={size / 2}
           />
         </Svg>
         {/* Center label */}
@@ -134,7 +136,7 @@ const styles = StyleSheet.create({
   },
   centerValue: {
     fontFamily: 'PlayfairDisplay_700Bold',
-    fontSize: 22,
+    fontSize: 28,
     color: COLORS.fg,
   },
   centerSub: {

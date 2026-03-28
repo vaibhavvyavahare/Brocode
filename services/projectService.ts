@@ -1,3 +1,5 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 export interface Project {
   id: string;
   title: string;
@@ -11,7 +13,9 @@ export interface Project {
   createdAt: string;
 }
 
-let MOCK_PROJECTS: Project[] = [
+const PROJECTS_KEY = 'billable-projects-data';
+
+const DEFAULT_PROJECTS: Project[] = [
   {
     id: 'p1',
     title: 'E-commerce Redesign',
@@ -49,7 +53,16 @@ let MOCK_PROJECTS: Project[] = [
 ];
 
 export const getProjects = async (): Promise<Project[]> => {
-  return Promise.resolve([...MOCK_PROJECTS]);
+  try {
+    const data = await AsyncStorage.getItem(PROJECTS_KEY);
+    if (data) return JSON.parse(data);
+    
+    // Seed default data if empty
+    await AsyncStorage.setItem(PROJECTS_KEY, JSON.stringify(DEFAULT_PROJECTS));
+    return DEFAULT_PROJECTS;
+  } catch (e) {
+    return DEFAULT_PROJECTS;
+  }
 };
 
 export const createProject = async (data: Omit<Project, 'id' | 'createdAt'>): Promise<Project> => {
@@ -58,11 +71,14 @@ export const createProject = async (data: Omit<Project, 'id' | 'createdAt'>): Pr
     id: `p${Date.now()}`,
     createdAt: new Date().toISOString(),
   };
-  MOCK_PROJECTS.push(newProject);
-  return Promise.resolve(newProject);
+  const current = await getProjects();
+  current.unshift(newProject);
+  await AsyncStorage.setItem(PROJECTS_KEY, JSON.stringify(current));
+  return newProject;
 };
 
 export const deleteProject = async (id: string): Promise<void> => {
-  MOCK_PROJECTS = MOCK_PROJECTS.filter(p => p.id !== id);
-  return Promise.resolve();
+  const current = await getProjects();
+  const next = current.filter(p => p.id !== id);
+  await AsyncStorage.setItem(PROJECTS_KEY, JSON.stringify(next));
 };

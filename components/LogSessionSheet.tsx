@@ -1,6 +1,8 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
-import { View, Text, StyleSheet, Pressable, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, Pressable, ActivityIndicator, Platform, TextInput } from 'react-native';
 import BottomSheet, { BottomSheetBackdrop, BottomSheetTextInput, BottomSheetScrollView } from '@gorhom/bottom-sheet';
+
+const SheetInput = Platform.OS === 'web' ? TextInput : BottomSheetTextInput;
 import { logSession, getSessions } from '../services/sessionService';
 import { getProjects } from '../services/projectService';
 import { COLORS, TEXT_STYLES } from '../constants/theme';
@@ -82,6 +84,7 @@ export default function LogSessionSheet({
       });
       
       setHours(''); setNote('');
+      useGlobalStore.getState().triggerRefresh();
       sheetRef.current?.close();
       if (onLogged) onLogged();
     } catch (err) {
@@ -98,11 +101,16 @@ export default function LogSessionSheet({
     const oldTotal = sessions.reduce((s, x) => s + x.hours, 0);
     const newTotalHours = oldTotal + h;
     let oldBillable = sessions.filter(x => x.type === 'billable').reduce((s, x) => s + x.hours, 0);
-    if (type === 'billable') oldBillable += h;
+    let oldNonBillable = sessions.filter(x => x.type === 'nonbillable').reduce((s, x) => s + x.hours, 0);
+    
+    let newBillable = oldBillable;
+    let newNonBillable = oldNonBillable;
+    if (type === 'billable') newBillable += h;
+    else newNonBillable += h;
     
     let totalValue = projectData.price;
     if (projectData.model === 'hourly') {
-      totalValue = oldBillable * projectData.hourlyRate;
+      totalValue = (newBillable * projectData.hourlyRate);
     }
     
     previewRate = newTotalHours > 0 ? totalValue / newTotalHours : 0;
@@ -125,7 +133,7 @@ export default function LogSessionSheet({
 
         <View style={styles.inputGroup}>
           <Text style={styles.label}>Duration (Hours)</Text>
-          <BottomSheetTextInput 
+          <SheetInput 
             style={[styles.input, styles.monoInput]} 
             keyboardType="numeric" 
             placeholder="0.0" 
@@ -176,7 +184,7 @@ export default function LogSessionSheet({
 
         <View style={styles.inputGroup}>
           <Text style={styles.label}>Note (Optional)</Text>
-          <BottomSheetTextInput 
+          <SheetInput 
             style={styles.input} 
             placeholder="What did you work on?" 
             placeholderTextColor={COLORS.muted}

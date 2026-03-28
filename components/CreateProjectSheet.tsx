@@ -1,7 +1,10 @@
 import React, { useCallback, useMemo, useRef, useState } from 'react';
-import { View, Text, StyleSheet, TextInput, Pressable, ScrollView, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, TextInput, Pressable, ScrollView, ActivityIndicator, Platform } from 'react-native';
 import BottomSheet, { BottomSheetBackdrop, BottomSheetTextInput, BottomSheetScrollView } from '@gorhom/bottom-sheet';
+
+const SheetInput = Platform.OS === 'web' ? TextInput : BottomSheetTextInput;
 import { createProject } from '../services/projectService';
+import { useGlobalStore } from '../stores/globalStore';
 import { COLORS, TEXT_STYLES } from '../constants/theme';
 
 const PROJECT_TYPES = ['Web Dev', 'Design', 'ML Project', 'Consulting', 'Content', 'Other'] as const;
@@ -57,6 +60,7 @@ export default function CreateProjectSheet({ sheetRef, onCreated }: { sheetRef: 
       // Reset form
       setTitle(''); setClient(''); setPrice(''); setHourlyRate(''); setBudgetHours(''); setMeetUrl('');
       
+      useGlobalStore.getState().triggerRefresh();
       sheetRef.current?.close();
       if (onCreated) onCreated();
     } catch (err) {
@@ -81,7 +85,7 @@ export default function CreateProjectSheet({ sheetRef, onCreated }: { sheetRef: 
         
         <View style={styles.inputGroup}>
           <Text style={styles.label}>Project Title</Text>
-          <BottomSheetTextInput 
+          <SheetInput 
             style={styles.input} 
             placeholderTextColor={COLORS.muted} 
             placeholder="e.g. E-commerce Redesign" 
@@ -91,7 +95,7 @@ export default function CreateProjectSheet({ sheetRef, onCreated }: { sheetRef: 
 
         <View style={styles.inputGroup}>
           <Text style={styles.label}>Client Name</Text>
-          <BottomSheetTextInput 
+          <SheetInput 
             style={styles.input} 
             placeholderTextColor={COLORS.muted} 
             placeholder="e.g. Acme Corp" 
@@ -135,7 +139,7 @@ export default function CreateProjectSheet({ sheetRef, onCreated }: { sheetRef: 
         {model === 'fixed' ? (
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Total Fixed Price (₹)</Text>
-            <BottomSheetTextInput 
+            <SheetInput 
               style={[styles.input, styles.monoInput]} 
               keyboardType="numeric" 
               placeholder="0" 
@@ -146,7 +150,7 @@ export default function CreateProjectSheet({ sheetRef, onCreated }: { sheetRef: 
         ) : (
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Rate per Hour (₹)</Text>
-            <BottomSheetTextInput 
+            <SheetInput 
               style={[styles.input, styles.monoInput]} 
               keyboardType="numeric" 
               placeholder="0" 
@@ -158,7 +162,7 @@ export default function CreateProjectSheet({ sheetRef, onCreated }: { sheetRef: 
 
         <View style={styles.inputGroup}>
           <Text style={styles.label}>Estimated Hours Budget</Text>
-          <BottomSheetTextInput 
+          <SheetInput 
             style={[styles.input, styles.monoInput]} 
             keyboardType="numeric" 
             placeholder="0" 
@@ -169,7 +173,7 @@ export default function CreateProjectSheet({ sheetRef, onCreated }: { sheetRef: 
 
         <View style={styles.inputGroup}>
           <Text style={styles.label}>Google Meet URL (Optional)</Text>
-          <BottomSheetTextInput 
+          <SheetInput 
             style={styles.input} 
             autoCapitalize="none"
             placeholder="https://meet.google.com/xxx-xxxx" 

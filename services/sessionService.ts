@@ -1,3 +1,5 @@
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 export interface Session {
   id: string;
   projectId: string;
@@ -9,7 +11,9 @@ export interface Session {
   endedAt: string;
 }
 
-let MOCK_SESSIONS: Session[] = [
+const SESSIONS_KEY = 'billable-sessions-data';
+
+const DEFAULT_SESSIONS: Session[] = [
   ...Array.from({ length: 8 }).map((_, i) => ({
     id: `s${i}`,
     projectId: i % 2 === 0 ? 'p1' : (i % 3 === 0 ? 'p2' : 'p3'),
@@ -22,12 +26,22 @@ let MOCK_SESSIONS: Session[] = [
   }))
 ];
 
-export const getSessions = async (projectId: string): Promise<Session[]> => {
-  return Promise.resolve(MOCK_SESSIONS.filter(s => s.projectId === projectId));
+export const getAllSessions = async (): Promise<Session[]> => {
+  try {
+    const data = await AsyncStorage.getItem(SESSIONS_KEY);
+    if (data) return JSON.parse(data);
+    
+    // Seed default data if empty
+    await AsyncStorage.setItem(SESSIONS_KEY, JSON.stringify(DEFAULT_SESSIONS));
+    return DEFAULT_SESSIONS;
+  } catch (e) {
+    return DEFAULT_SESSIONS;
+  }
 };
 
-export const getAllSessions = async (): Promise<Session[]> => {
-  return Promise.resolve([...MOCK_SESSIONS]);
+export const getSessions = async (projectId: string): Promise<Session[]> => {
+  const all = await getAllSessions();
+  return all.filter(s => s.projectId === projectId);
 };
 
 export const logSession = async (data: Omit<Session, 'id'>): Promise<Session> => {
@@ -35,11 +49,14 @@ export const logSession = async (data: Omit<Session, 'id'>): Promise<Session> =>
     ...data,
     id: `s${Date.now()}`,
   };
-  MOCK_SESSIONS.push(newSession);
-  return Promise.resolve(newSession);
+  const current = await getAllSessions();
+  current.unshift(newSession); // add newer sessions to the beginning
+  await AsyncStorage.setItem(SESSIONS_KEY, JSON.stringify(current));
+  return newSession;
 };
 
 export const deleteSession = async (id: string): Promise<void> => {
-  MOCK_SESSIONS = MOCK_SESSIONS.filter(s => s.id !== id);
-  return Promise.resolve();
+  const current = await getAllSessions();
+  const next = current.filter(s => s.id !== id);
+  await AsyncStorage.setItem(SESSIONS_KEY, JSON.stringify(next));
 };

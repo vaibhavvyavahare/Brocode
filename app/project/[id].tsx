@@ -14,7 +14,7 @@ import { ArrowLeft, MoreVertical, Play, Video, Plus, Trash2 } from 'lucide-react
 export default function ProjectDetail() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const router = useRouter();
-  const { rateFloor } = useGlobalStore();
+  const { rateFloor, refreshTrigger } = useGlobalStore();
   const { isRunning, projectId: activeTimerProjectId, startTimer, elapsed } = useTimerStore();
   
   const [project, setProject] = useState<Project | null>(null);
@@ -46,7 +46,7 @@ export default function ProjectDetail() {
 
   useEffect(() => {
     loadData();
-  }, [loadData]);
+  }, [id, refreshTrigger]);
 
   if (!project) return null;
 
@@ -66,16 +66,17 @@ export default function ProjectDetail() {
 
   const totalHours = billableHours + nonBillableHours;
   
-  let totalValue = project.model === 'fixed' ? project.price : billableHours * project.hourlyRate;
+  let totalValue = project.model === 'fixed' ? project.price : (billableHours * project.hourlyRate);
   let effectiveRate = totalHours > 0 ? totalValue / totalHours : (project.model === 'hourly' ? project.hourlyRate : 0);
 
   const budgetUsedPercent = project.budgetHours > 0 ? (totalHours / project.budgetHours) * 100 : 0;
   
   let profitabilityMsg = '';
   let profitabilityEmoji = '';
-  if (effectiveRate >= rateFloor * 1.5) {
+  const roundedRate = Math.round(effectiveRate);
+  if (roundedRate >= rateFloor * 1.5) {
     profitabilityMsg = 'Highly profitable project'; profitabilityEmoji = '🟢';
-  } else if (effectiveRate >= rateFloor) {
+  } else if (roundedRate >= rateFloor) {
     profitabilityMsg = 'Profitable — watch your hours'; profitabilityEmoji = '🟡';
   } else {
     profitabilityMsg = "Unprofitable — you're losing money"; profitabilityEmoji = '🔴';
@@ -137,7 +138,9 @@ export default function ProjectDetail() {
     Alert.alert('Delete Project', 'Are you sure?', [
       { text: 'Cancel', style: 'cancel' },
       { text: 'Delete', style: 'destructive', onPress: async () => {
+        const { triggerRefresh } = useGlobalStore.getState();
         await deleteProject(project.id);
+        triggerRefresh();
         router.back();
       }}
     ]);
@@ -164,7 +167,7 @@ export default function ProjectDetail() {
         </View>
 
         {/* Hero Card */}
-        <View style={[styles.heroCard, effectiveRate < rateFloor && { borderColor: COLORS.red }]}>
+        <View style={[styles.heroCard, roundedRate < rateFloor && { borderColor: COLORS.red }]}>
           <View style={styles.heroHeader}>
             <Text style={styles.heroLabel}>EFFECTIVE RATE</Text>
             {isTimerActiveForProject && (
@@ -175,14 +178,14 @@ export default function ProjectDetail() {
             )}
           </View>
           
-          <Text style={[styles.heroRate, { color: effectiveRate >= rateFloor ? COLORS.green : COLORS.red }]}>
+          <Text style={[styles.heroRate, { color: roundedRate >= rateFloor ? COLORS.green : COLORS.red }]}>
             ₹{effectiveRate.toFixed(0)}<Text style={{ fontSize: 24, color: COLORS.muted }}>/hr</Text>
           </Text>
           <Text style={styles.heroFormula}>
             ₹{totalValue.toFixed(0)} value ÷ {totalHours.toFixed(1)}h total
           </Text>
 
-          {effectiveRate < rateFloor && (
+          {roundedRate < rateFloor && (
             <View style={styles.alertStrip}>
               <Text style={styles.alertText}>
                 ⚠ Rate below your ₹{rateFloor}/hr floor — consider renegotiating

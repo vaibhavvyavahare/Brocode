@@ -1,0 +1,772 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tax Dodge 🎮 – Freelance Scout</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        *,
+        *::before,
+        *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #020817;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            padding: 20px 16px 40px;
+            color: #e2e8f0;
+        }
+
+        /* HEADER */
+        .game-title {
+            font-size: 28px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #6366f1, #a78bfa, #ec4899);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-align: center;
+            margin-bottom: 4px;
+        }
+
+        .game-sub {
+            font-size: 12px;
+            color: #475569;
+            text-align: center;
+            margin-bottom: 18px;
+        }
+
+        /* HUD */
+        .hud {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 12px;
+            width: 100%;
+            max-width: 520px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .hud-card {
+            flex: 1;
+            min-width: 80px;
+            background: rgba(99, 102, 241, 0.08);
+            border: 1px solid rgba(99, 102, 241, 0.15);
+            border-radius: 10px;
+            padding: 8px 10px;
+            text-align: center;
+        }
+
+        .hud-label {
+            font-size: 9px;
+            color: #475569;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            margin-bottom: 2px;
+        }
+
+        .hud-value {
+            font-size: 15px;
+            font-weight: 700;
+        }
+
+        .hud-value.green {
+            color: #4ade80;
+        }
+
+        .hud-value.blue {
+            color: #60a5fa;
+        }
+
+        .hud-value.red {
+            color: #f87171;
+        }
+
+        .hud-value.white {
+            color: #e2e8f0;
+        }
+
+        /* CANVAS */
+        #game-canvas {
+            width: 100%;
+            max-width: 520px;
+            height: 380px;
+            border-radius: 16px;
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            background: #020817;
+            cursor: none;
+            display: block;
+        }
+
+        /* CONTROLS */
+        .controls {
+            display: flex;
+            gap: 10px;
+            margin-top: 12px;
+            width: 100%;
+            max-width: 520px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-start {
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            color: #fff;
+            box-shadow: 0 4px 16px rgba(34, 197, 94, 0.35);
+        }
+
+        .btn-start:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(34, 197, 94, 0.5);
+        }
+
+        .btn-start:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-reset {
+            background: rgba(99, 102, 241, 0.15);
+            color: #a5b4fc;
+            border: 1px solid rgba(99, 102, 241, 0.25);
+        }
+
+        .btn-reset:hover {
+            background: rgba(99, 102, 241, 0.25);
+        }
+
+        /* LEGEND */
+        .legend {
+            display: flex;
+            gap: 8px;
+            margin-top: 14px;
+            flex-wrap: wrap;
+            justify-content: center;
+            width: 100%;
+            max-width: 520px;
+        }
+
+        .legend-item {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.07);
+            border-radius: 8px;
+            padding: 6px 12px;
+            font-size: 11px;
+            color: #64748b;
+        }
+
+        .legend-item strong {
+            color: #94a3b8;
+        }
+
+        /* GAME OVER */
+        #go-screen {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 50;
+            background: rgba(2, 8, 23, 0.92);
+            backdrop-filter: blur(6px);
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 32px 24px;
+        }
+
+        #go-screen.show {
+            display: flex;
+            animation: fade-in 0.4s ease;
+        }
+
+        @keyframes fade-in {
+            from {
+                opacity: 0;
+                transform: scale(0.95)
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1)
+            }
+        }
+
+        .go-emoji {
+            font-size: 64px;
+            margin-bottom: 14px;
+            animation: bounce 0.7s ease infinite alternate;
+        }
+
+        @keyframes bounce {
+            from {
+                transform: translateY(0)
+            }
+
+            to {
+                transform: translateY(-10px)
+            }
+        }
+
+        .go-title {
+            font-size: 24px;
+            font-weight: 800;
+            color: #fff;
+            margin-bottom: 8px;
+        }
+
+        .go-msg {
+            font-size: 13px;
+            color: #94a3b8;
+            margin-bottom: 20px;
+            line-height: 1.6;
+            max-width: 380px;
+        }
+
+        .go-stats {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        .go-stat {
+            background: rgba(99, 102, 241, 0.12);
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            border-radius: 12px;
+            padding: 12px 18px;
+            text-align: center;
+        }
+
+        .go-stat-label {
+            font-size: 10px;
+            color: #64748b;
+            margin-bottom: 4px;
+        }
+
+        .go-stat-value {
+            font-size: 20px;
+            font-weight: 800;
+            color: #a5b4fc;
+        }
+
+        .go-savings {
+            background: linear-gradient(135deg, rgba(34, 197, 94, 0.12), rgba(34, 197, 94, 0.04));
+            border: 1px solid rgba(34, 197, 94, 0.3);
+            border-radius: 16px;
+            padding: 16px 24px;
+            margin-bottom: 16px;
+            width: 100%;
+            max-width: 380px;
+        }
+
+        .go-savings-label {
+            font-size: 11px;
+            color: #86efac;
+            margin-bottom: 4px;
+        }
+
+        .go-savings-amount {
+            font-size: 36px;
+            font-weight: 800;
+            color: #4ade80;
+        }
+
+        .go-punchline {
+            font-size: 12px;
+            color: #6366f1;
+            font-style: italic;
+            background: rgba(99, 102, 241, 0.08);
+            border-radius: 10px;
+            padding: 10px 16px;
+            margin-bottom: 20px;
+            max-width: 380px;
+            line-height: 1.5;
+        }
+
+        .go-btns {
+            display: flex;
+            gap: 10px;
+        }
+
+        .go-btn {
+            padding: 12px 28px;
+            border: none;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .go-btn-play {
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: #fff;
+            box-shadow: 0 4px 20px rgba(99, 102, 241, 0.4);
+        }
+
+        .go-btn-play:hover {
+            transform: scale(1.05);
+        }
+
+        .go-btn-share {
+            background: rgba(255, 255, 255, 0.05);
+            color: #94a3b8;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .go-btn-share:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        /* CONTROLS TIP */
+        .tips {
+            font-size: 11px;
+            color: #1e293b;
+            text-align: center;
+            margin-top: 8px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="game-title">💰 Tax Dodge</div>
+    <div class="game-sub">Tax Evasion... I mean, Tax <em>Optimization</em> 🤫 — Full Standalone Game</div>
+
+    <!-- HUD -->
+    <div class="hud">
+        <div class="hud-card">
+            <div class="hud-label">💰 Income</div>
+            <div class="hud-value green" id="s-income">₹0</div>
+        </div>
+        <div class="hud-card">
+            <div class="hud-label">💻 Expenses</div>
+            <div class="hud-value blue" id="s-expense">₹0</div>
+        </div>
+        <div class="hud-card">
+            <div class="hud-label">🧾 Tax Hit</div>
+            <div class="hud-value red" id="s-taxhit">₹0</div>
+        </div>
+        <div class="hud-card">
+            <div class="hud-label">⚡ Speed</div>
+            <div class="hud-value white" id="s-speed">1x</div>
+        </div>
+        <div class="hud-card">
+            <div class="hud-label">❤️ Lives</div>
+            <div class="hud-value white" id="s-lives">❤️❤️❤️❤️❤️</div>
+        </div>
+    </div>
+
+    <!-- CANVAS -->
+    <canvas id="game-canvas"></canvas>
+
+    <!-- CONTROLS -->
+    <div class="controls">
+        <button class="btn btn-start" id="start-btn" onclick="startGame()">▶ Start Game</button>
+        <button class="btn btn-reset" onclick="resetGame()">↺ Reset</button>
+    </div>
+
+    <!-- LEGEND -->
+    <div class="legend">
+        <div class="legend-item">💰 Coin <strong>+₹500</strong></div>
+        <div class="legend-item">🪙 Rupee <strong>+₹200</strong></div>
+        <div class="legend-item">💻 Laptop <strong>+₹300</strong></div>
+        <div class="legend-item">🧾 Tax 💀 <strong>Dodge!</strong></div>
+        <div class="legend-item">🏦 GST 💀 <strong>Dodge!</strong></div>
+        <div class="legend-item">📄 Doc 💀 <strong>Dodge!</strong></div>
+    </div>
+    <div class="tips">🖱 Move mouse • ⌨️ Arrow Keys / A–D • 📱 Touch supported</div>
+
+    <!-- GAME OVER SCREEN -->
+    <div id="go-screen">
+        <div class="go-emoji" id="go-emoji">🤑</div>
+        <div class="go-title">Tax Optimization Complete!</div>
+        <div class="go-msg" id="go-msg">The AI CA has reviewed your gameplay.</div>
+
+        <div class="go-stats">
+            <div class="go-stat">
+                <div class="go-stat-label">💰 Income Caught</div>
+                <div class="go-stat-value" id="go-income">₹0</div>
+            </div>
+            <div class="go-stat">
+                <div class="go-stat-label">💻 Expenses</div>
+                <div class="go-stat-value" id="go-expense">₹0</div>
+            </div>
+            <div class="go-stat">
+                <div class="go-stat-label">💀 Tax Absorbed</div>
+                <div class="go-stat-value" style="color:#f87171" id="go-taxhit">₹0</div>
+            </div>
+        </div>
+
+        <div class="go-savings">
+            <div class="go-savings-label">🎉 Total Simulated Tax Savings</div>
+            <div class="go-savings-amount" id="go-saved">₹0</div>
+        </div>
+
+        <div class="go-punchline" id="go-punchline">"Disclaimer: This is not actual tax advice."</div>
+
+        <div class="go-btns">
+            <button class="go-btn go-btn-play" onclick="closeGameOver()">🔄 Play Again</button>
+            <button class="go-btn go-btn-share" onclick="shareScore()">📤 Share</button>
+        </div>
+    </div>
+
+    <script>
+        /* ─────────────── CONFIG ─────────────── */
+        const ITEMS = [
+            { emoji: '💰', type: 'income', value: 500, catch: true, color: '#4ade80' },
+            { emoji: '🪙', type: 'income', value: 200, catch: true, color: '#fbbf24' },
+            { emoji: '💻', type: 'expense', value: 300, catch: true, color: '#60a5fa' },
+            { emoji: '🧾', type: 'tax', value: 1000, catch: false, color: '#f87171' },
+            { emoji: '🏦', type: 'gst', value: 1500, catch: false, color: '#f87171' },
+            { emoji: '📄', type: 'tax', value: 800, catch: false, color: '#fb923c' },
+        ];
+
+        const PUNCHLINES = [
+            '"While the AI was searching, you saved ₹',
+            '"Your CA would be proud. Or fired. Hard to say."',
+            '"Section 80C: Mastered. Skill unlocked! 🏆"',
+            '"The IT Department has been notified. Just kidding. Maybe."',
+            '"Your effective tax rate is now ₹0. In the game, at least."',
+            '"You dodged taxes better than you dodge deadlines!"',
+            '"Congratulations! You are now a Level 5 Freelance Optimizer!"',
+        ];
+
+        const MESSAGES = [
+            amt => `While the AI was searching, you saved ₹${amt} in simulated taxes! 🎉`,
+            amt => `Your virtual CA just filed returns. Savings: ₹${amt}. Legal status: 😂`,
+            amt => `The GST portal is down — but you dodged ₹${amt} worth of taxes anyway!`,
+            amt => `₹${amt} saved. Don't spend it all on chai. ☕`,
+        ];
+
+        /* ─────────────── STATE ─────────────── */
+        let canvas, ctx;
+        let basket, fallingItems, floatTexts;
+        let lives, income, expense, taxHit, frameCount, speed;
+        let gameRunning = false, animId = null;
+        const keys = {};
+
+        /* ─────────────── INIT ─────────────── */
+        window.addEventListener('DOMContentLoaded', () => {
+            canvas = document.getElementById('game-canvas');
+            ctx = canvas.getContext('2d');
+            sizeCanvas();
+            initGame();
+            drawIdle();
+        });
+
+        function sizeCanvas() {
+            const maxW = Math.min(window.innerWidth - 32, 520);
+            canvas.width = maxW;
+            canvas.height = 380;
+        }
+
+        window.addEventListener('resize', () => {
+            sizeCanvas();
+            if (basket) basket.x = Math.min(basket.x, canvas.width - basket.w);
+            if (!gameRunning) drawIdle();
+        });
+
+        /* ─────────────── GAME FUNCTIONS ─────────────── */
+        function initGame() {
+            basket = { x: canvas.width / 2 - 40, y: canvas.height - 55, w: 80, h: 30, speed: 8 };
+            fallingItems = [];
+            floatTexts = [];
+            lives = 5; income = 0; expense = 0; taxHit = 0;
+            frameCount = 0; speed = 2;
+            updateHUD();
+        }
+
+        function startGame() {
+            if (gameRunning) return;
+            document.getElementById('go-screen').classList.remove('show');
+            initGame();
+            gameRunning = true;
+            document.getElementById('start-btn').textContent = '⏸ Playing...';
+            document.getElementById('start-btn').disabled = true;
+            loop();
+        }
+
+        function resetGame() {
+            cancelAnimationFrame(animId);
+            gameRunning = false;
+            document.getElementById('go-screen').classList.remove('show');
+            document.getElementById('start-btn').textContent = '▶ Start Game';
+            document.getElementById('start-btn').disabled = false;
+            initGame();
+            drawIdle();
+        }
+
+        function closeGameOver() {
+            document.getElementById('go-screen').classList.remove('show');
+            resetGame();
+        }
+
+        /* ─────────────── LOOP ─────────────── */
+        function loop() {
+            if (!gameRunning) return;
+            animId = requestAnimationFrame(loop);
+            frameCount++;
+
+            // Speed ramp
+            if (frameCount % 360 === 0) {
+                speed = Math.min(speed + 0.25, 6);
+                updateHUD();
+            }
+
+            // Spawn
+            const spawnRate = Math.max(40 - Math.floor(speed * 4), 16);
+            if (frameCount % spawnRate === 0) spawnItem();
+
+            // Keyboard move
+            if ((keys['ArrowLeft'] || keys['a'] || keys['A']) && basket.x > 0) basket.x -= basket.speed;
+            if ((keys['ArrowRight'] || keys['d'] || keys['D']) && basket.x < canvas.width - basket.w) basket.x += basket.speed;
+
+            draw();
+
+            if (lives <= 0) endGame();
+        }
+
+        /* ─────────────── DRAW ─────────────── */
+        function draw() {
+            // BG
+            ctx.fillStyle = '#020817';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Grid
+            ctx.strokeStyle = 'rgba(99,102,241,0.04)';
+            ctx.lineWidth = 1;
+            for (let x = 0; x < canvas.width; x += 48) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke(); }
+            for (let y = 0; y < canvas.height; y += 48) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke(); }
+
+            // Ground line
+            ctx.strokeStyle = 'rgba(99,102,241,0.15)';
+            ctx.lineWidth = 1;
+            ctx.beginPath(); ctx.moveTo(0, canvas.height - 18); ctx.lineTo(canvas.width, canvas.height - 18); ctx.stroke();
+
+            // Basket
+            const bx = basket.x, by = basket.y, bw = basket.w, bh = basket.h;
+            const grad = ctx.createLinearGradient(bx, by, bx + bw, by + bh);
+            grad.addColorStop(0, '#6366f1'); grad.addColorStop(1, '#4338ca');
+            ctx.fillStyle = grad;
+            roundRect(ctx, bx, by, bw, bh, 10);
+            ctx.shadowColor = '#6366f1'; ctx.shadowBlur = 20;
+            ctx.strokeStyle = '#818cf8'; ctx.lineWidth = 1.5; ctx.stroke();
+            ctx.shadowBlur = 0;
+            ctx.font = '18px serif'; ctx.textAlign = 'center';
+            ctx.fillStyle = '#fff';
+            ctx.fillText('🧺', bx + bw / 2, by + bh / 2 + 6);
+
+            // Items
+            for (const it of fallingItems) {
+                ctx.shadowColor = it.color; ctx.shadowBlur = 14;
+                ctx.font = `${it.size}px serif`; ctx.textAlign = 'center';
+                ctx.fillText(it.emoji, it.x, it.y);
+                ctx.shadowBlur = 0;
+            }
+
+            // Float texts
+            for (const ft of floatTexts) {
+                ctx.globalAlpha = Math.max(ft.alpha, 0);
+                ctx.font = 'bold 12px Inter, sans-serif'; ctx.textAlign = 'center';
+                ctx.fillStyle = ft.color;
+                ctx.fillText(ft.text, ft.x, ft.y);
+            }
+            ctx.globalAlpha = 1;
+        }
+
+        function drawIdle() {
+            if (!ctx) return;
+            ctx.fillStyle = '#020817'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.textAlign = 'center';
+            ctx.font = '48px serif'; ctx.fillText('🎮', canvas.width / 2, canvas.height / 2 - 30);
+            ctx.font = 'bold 14px Inter, sans-serif'; ctx.fillStyle = '#334155';
+            ctx.fillText('Tax Optimization begins when you click ▶ Start!', canvas.width / 2, canvas.height / 2 + 14);
+            ctx.font = '11px Inter, sans-serif'; ctx.fillStyle = '#1e293b';
+            ctx.fillText('Move your mouse or use arrow keys to control the basket', canvas.width / 2, canvas.height / 2 + 36);
+        }
+
+        /* ─────────────── PHYSICS ─────────────── */
+        function spawnItem() {
+            const tmpl = ITEMS[Math.floor(Math.random() * ITEMS.length)];
+            const sz = 24 + Math.random() * 10;
+            fallingItems.push({
+                ...tmpl, x: sz + Math.random() * (canvas.width - sz * 2),
+                y: -sz, size: sz, vy: speed + Math.random() * 1.8
+            });
+        }
+
+        function updateItems() {
+            for (let i = fallingItems.length - 1; i >= 0; i--) {
+                const it = fallingItems[i];
+                it.y += it.vy;
+                const hw = it.size * 0.45;
+
+                // Collision
+                if (it.y + hw >= basket.y && it.y - hw <= basket.y + basket.h &&
+                    it.x + hw >= basket.x && it.x - hw <= basket.x + basket.w) {
+                    if (it.catch) {
+                        if (it.type === 'income') income += it.value;
+                        else expense += it.value;
+                        floatTexts.push({ x: it.x, y: it.y - 10, text: '+₹' + it.value, color: it.color, alpha: 1, vy: -1.8 });
+                        updateHUD();
+                    } else {
+                        lives--;
+                        taxHit += it.value;
+                        floatTexts.push({ x: it.x, y: it.y - 10, text: '💀 TAX HIT!', color: '#f87171', alpha: 1, vy: -1.8 });
+                        updateHUD();
+                        flashScreen();
+                    }
+                    fallingItems.splice(i, 1); continue;
+                }
+
+                // Out of screen
+                if (it.y > canvas.height + 30) {
+                    if (!it.catch) {
+                        floatTexts.push({ x: it.x, y: canvas.height - 25, text: '😂 Dodged!', color: '#4ade80', alpha: 1, vy: -1.5 });
+                    }
+                    fallingItems.splice(i, 1);
+                }
+            }
+        }
+
+        // run item physics separately inside loop
+        const originalLoop = loop;
+        function loopWithPhysics() {
+            if (!gameRunning) return;
+            animId = requestAnimationFrame(loopWithPhysics);
+            frameCount++;
+            if (frameCount % 360 === 0) { speed = Math.min(speed + 0.25, 6); updateHUD(); }
+            const spawnRate = Math.max(40 - Math.floor(speed * 4), 18);
+            if (frameCount % spawnRate === 0) spawnItem();
+            if ((keys['ArrowLeft'] || keys['a'] || keys['A']) && basket.x > 0) basket.x -= basket.speed;
+            if ((keys['ArrowRight'] || keys['d'] || keys['D']) && basket.x < canvas.width - basket.w) basket.x += basket.speed;
+            updateItems();
+            updateFloatTexts();
+            draw();
+            if (lives <= 0) endGame();
+        }
+
+        // Override loop
+        window.loop = loopWithPhysics;
+        function startGame() {
+            if (gameRunning) return;
+            document.getElementById('go-screen').classList.remove('show');
+            initGame(); gameRunning = true;
+            document.getElementById('start-btn').textContent = '⏸ Playing...';
+            document.getElementById('start-btn').disabled = true;
+            loopWithPhysics();
+        }
+
+        function updateFloatTexts() {
+            for (let i = floatTexts.length - 1; i >= 0; i--) {
+                const ft = floatTexts[i];
+                ft.y += ft.vy; ft.alpha -= 0.022;
+                if (ft.alpha <= 0) floatTexts.splice(i, 1);
+            }
+        }
+
+        /* ─────────────── FLASH ─────────────── */
+        let flashAlpha = 0;
+        function flashScreen() { flashAlpha = 0.35; }
+        // Integrate flash into draw
+        const _draw = draw;
+        window.draw = function () {
+            _draw();
+            if (flashAlpha > 0) {
+                ctx.fillStyle = `rgba(239,68,68,${flashAlpha})`;
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                flashAlpha = Math.max(flashAlpha - 0.04, 0);
+            }
+        };
+
+        /* ─────────────── HUD ─────────────── */
+        function updateHUD() {
+            document.getElementById('s-income').textContent = '₹' + income.toLocaleString('en-IN');
+            document.getElementById('s-expense').textContent = '₹' + expense.toLocaleString('en-IN');
+            document.getElementById('s-taxhit').textContent = '₹' + taxHit.toLocaleString('en-IN');
+            document.getElementById('s-speed').textContent = speed.toFixed(1) + 'x';
+            document.getElementById('s-lives').textContent = lives <= 0 ? '💀' : '❤️'.repeat(Math.max(0, lives));
+        }
+
+        /* ─────────────── GAME OVER ─────────────── */
+        function endGame() {
+            gameRunning = false;
+            cancelAnimationFrame(animId);
+            document.getElementById('start-btn').textContent = '▶ Start Game';
+            document.getElementById('start-btn').disabled = false;
+
+            const saved = income + expense;
+            const emoji = saved > 8000 ? '🤑' : saved > 4000 ? '😎' : saved > 1000 ? '😄' : '😅';
+            const msg = MESSAGES[Math.floor(Math.random() * MESSAGES.length)](saved.toLocaleString('en-IN'));
+            let punchline = PUNCHLINES[Math.floor(Math.random() * PUNCHLINES.length)];
+            if (punchline.endsWith('₹')) punchline += saved.toLocaleString('en-IN') + ' in simulated taxes!"';
+
+            document.getElementById('go-emoji').textContent = emoji;
+            document.getElementById('go-msg').textContent = msg;
+            document.getElementById('go-income').textContent = '₹' + income.toLocaleString('en-IN');
+            document.getElementById('go-expense').textContent = '₹' + expense.toLocaleString('en-IN');
+            document.getElementById('go-taxhit').textContent = '₹' + taxHit.toLocaleString('en-IN');
+            document.getElementById('go-saved').textContent = '₹' + saved.toLocaleString('en-IN');
+            document.getElementById('go-punchline').textContent = punchline;
+            document.getElementById('go-screen').classList.add('show');
+        }
+
+        function shareScore() {
+            const saved = income + expense;
+            const txt = `I just saved ₹${saved.toLocaleString('en-IN')} in simulated taxes playing Tax Dodge! 🎮💰 #FreelanceScout #TaxOptimization`;
+            if (navigator.share) {
+                navigator.share({ title: 'Tax Dodge Score', text: txt });
+            } else {
+                navigator.clipboard.writeText(txt).then(() => alert('Score copied to clipboard! 📋'));
+            }
+        }
+
+        /* ─────────────── HELPER ─────────────── */
+        function roundRect(ctx, x, y, w, h, r) {
+            ctx.beginPath();
+            ctx.moveTo(x + r, y); ctx.lineTo(x + w - r, y);
+            ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+            ctx.lineTo(x + w, y + h - r); ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+            ctx.lineTo(x + r, y + h); ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+            ctx.lineTo(x, y + r); ctx.quadraticCurveTo(x, y, x + r, y);
+            ctx.closePath(); ctx.fill();
+        }
+
+        /* ─────────────── INPUT ─────────────── */
+        window.addEventListener('keydown', e => { keys[e.key] = true; e.preventDefault(); });
+        window.addEventListener('keyup', e => { keys[e.key] = false; });
+
+        function onPointer(e) {
+            if (!gameRunning || !basket || !canvas) return;
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const cx = ((e.clientX ?? e.touches?.[0]?.clientX ?? 0) - rect.left) * scaleX;
+            basket.x = Math.max(0, Math.min(canvas.width - basket.w, cx - basket.w / 2));
+        }
+        document.addEventListener('mousemove', onPointer);
+        document.addEventListener('touchmove', e => { if (e.target === canvas) e.preventDefault(); onPointer(e); }, { passive: false });
+    </script>
+</body>
+
+</html>

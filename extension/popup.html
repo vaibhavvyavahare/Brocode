@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>BlindSpot</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=JetBrains+Mono:wght@400;600&display=swap');
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      width: 260px;
+      background: #0b0b16;
+      color: #e8eaf6;
+      font-family: 'Syne', sans-serif;
+      padding: 20px;
+    }
+    .logo { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }
+    .logo-dot { width: 12px; height: 12px; border-radius: 4px; background: #f59e0b; box-shadow: 0 0 10px #f59e0b; }
+    .logo-text { font-size: 16px; font-weight: 800; }
+
+    .rate-label { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: #4a4e7a; letter-spacing: 2px; margin-bottom: 4px; }
+    .rate-value { font-size: 40px; font-weight: 800; color: #f59e0b; margin-bottom: 4px; }
+    .rate-sub   { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #4a4e7a; margin-bottom: 20px; }
+
+    hr { border: none; border-top: 1px solid rgba(30,30,53,0.9); margin: 16px 0; }
+
+    .open-btn {
+      display: block; width: 100%;
+      padding: 12px; border-radius: 12px;
+      background: linear-gradient(135deg,#f59e0b,#d97706);
+      border: none; color: #000;
+      font-family: 'Syne', sans-serif; font-weight: 800; font-size: 14px;
+      cursor: pointer; text-align: center; text-decoration: none;
+      margin-bottom: 10px;
+    }
+    .hint { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: #4a4e7a; text-align: center; }
+  </style>
+</head>
+<body>
+  <div class="logo">
+    <div class="logo-dot"></div>
+    <span class="logo-text">BlindSpot</span>
+  </div>
+
+  <div class="rate-label">CURRENT PROJECT RATE</div>
+  <div class="rate-value" id="rate-display">—</div>
+  <div class="rate-sub" id="rate-sub">No project selected</div>
+
+  <hr>
+
+  <a class="open-btn" id="open-app-btn">Open Dashboard ↗</a>
+  <div class="hint">Widget is active on this tab</div>
+
+  <script src="popup.js"></script>
+</body>
+</html>

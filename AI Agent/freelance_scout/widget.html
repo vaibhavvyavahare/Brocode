@@ -1,0 +1,1343 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Freelance Scout</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        *,
+        *::before,
+        *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #060d1f;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #e2e8f0;
+        }
+
+        .demo-bg {
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(ellipse at 20% 50%, rgba(99, 102, 241, 0.08) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 20%, rgba(139, 92, 246, 0.06) 0%, transparent 60%);
+            pointer-events: none;
+        }
+
+        .demo-text {
+            color: #0d1a33;
+            font-size: 72px;
+            font-weight: 700;
+            user-select: none;
+            letter-spacing: -2px;
+        }
+
+        /* ── FAB ── */
+        #scout-fab {
+            position: fixed;
+            bottom: 28px;
+            right: 28px;
+            width: 58px;
+            height: 58px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 8px 32px rgba(99, 102, 241, 0.5);
+            transition: transform 0.2s, box-shadow 0.2s;
+            z-index: 1000;
+        }
+
+        #scout-fab:hover {
+            transform: scale(1.1);
+            box-shadow: 0 12px 40px rgba(99, 102, 241, 0.65);
+        }
+
+        #scout-fab .ring {
+            position: absolute;
+            inset: -5px;
+            border-radius: 50%;
+            border: 2px solid rgba(99, 102, 241, 0.5);
+            animation: ring-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+
+        #scout-fab .ring2 {
+            inset: -10px;
+            border-color: rgba(99, 102, 241, 0.25);
+            animation-delay: 0.5s;
+        }
+
+        @keyframes ring-pulse {
+
+            0%,
+            100% {
+                transform: scale(1);
+                opacity: 1
+            }
+
+            50% {
+                transform: scale(1.15);
+                opacity: 0
+            }
+        }
+
+        #fab-badge {
+            position: absolute;
+            top: -4px;
+            right: -4px;
+            background: #22c55e;
+            color: white;
+            font-size: 10px;
+            font-weight: 700;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid #060d1f;
+        }
+
+        /* ── PANEL ── */
+        #scout-panel {
+            position: fixed;
+            bottom: 100px;
+            right: 28px;
+            width: 400px;
+            max-height: 600px;
+            background: #0f172a;
+            border: 1px solid rgba(99, 102, 241, 0.25);
+            border-radius: 22px;
+            box-shadow: 0 32px 80px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.04);
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+            z-index: 999;
+            transform-origin: bottom right;
+        }
+
+        #scout-panel.open {
+            display: flex;
+            animation: panel-in 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        @keyframes panel-in {
+            from {
+                opacity: 0;
+                transform: scale(0.85) translateY(16px)
+            }
+
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0)
+            }
+        }
+
+        /* HEADER */
+        .panel-header {
+            padding: 18px 20px 16px;
+            background: linear-gradient(135deg, rgba(49, 46, 129, 0.9), rgba(76, 29, 149, 0.9));
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 12px;
+            border-bottom: 1px solid rgba(99, 102, 241, 0.15);
+            flex-shrink: 0;
+        }
+
+        .header-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 3px;
+        }
+
+        .header-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #22c55e;
+            box-shadow: 0 0 8px #22c55e;
+        }
+
+        .header-sub {
+            font-size: 11px;
+            color: #a5b4fc;
+        }
+
+        .header-skills {
+            display: flex;
+            gap: 5px;
+            margin-top: 8px;
+            flex-wrap: wrap;
+        }
+
+        .skill-chip {
+            background: rgba(99, 102, 241, 0.2);
+            color: #c4b5fd;
+            font-size: 9px;
+            font-weight: 600;
+            padding: 3px 8px;
+            border-radius: 20px;
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        #close-btn {
+            background: rgba(255, 255, 255, 0.07);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #a5b4fc;
+            font-size: 14px;
+            width: 28px;
+            height: 28px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+            flex-shrink: 0;
+        }
+
+        #close-btn:hover {
+            background: rgba(255, 255, 255, 0.12);
+        }
+
+        /* TABS */
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid rgba(99, 102, 241, 0.1);
+            flex-shrink: 0;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 10px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: 600;
+            color: #475569;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+
+        .tab-btn.active {
+            color: #a5b4fc;
+            border-bottom: 2px solid #6366f1;
+        }
+
+        .tab-btn:hover:not(.active) {
+            color: #64748b;
+        }
+
+        /* PANEL BODY */
+        .panel-body {
+            padding: 16px;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .panel-body::-webkit-scrollbar {
+            width: 3px;
+        }
+
+        .panel-body::-webkit-scrollbar-thumb {
+            background: #4338ca;
+            border-radius: 4px;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        /* SCOUT BTN */
+        #run-scout {
+            width: 100%;
+            padding: 13px;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: white;
+            border: none;
+            border-radius: 13px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: opacity 0.2s, transform 0.1s;
+            margin-bottom: 16px;
+            box-shadow: 0 4px 20px rgba(99, 102, 241, 0.35);
+        }
+
+        #run-scout:hover:not(:disabled) {
+            transform: translateY(-1px);
+        }
+
+        #run-scout:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* PROGRESS */
+        #progress-wrap {
+            margin-bottom: 14px;
+            display: none;
+        }
+
+        .progress-label {
+            font-size: 11px;
+            color: #64748b;
+            margin-bottom: 6px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .progress-bar-bg {
+            height: 4px;
+            background: rgba(99, 102, 241, 0.15);
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #6366f1, #a78bfa);
+            border-radius: 4px;
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        .progress-steps {
+            display: flex;
+            gap: 6px;
+            margin-top: 10px;
+        }
+
+        .step-item {
+            flex: 1;
+            text-align: center;
+            font-size: 9px;
+            color: #334155;
+            padding: 5px 4px;
+            border-radius: 6px;
+            background: rgba(99, 102, 241, 0.05);
+            border: 1px solid rgba(99, 102, 241, 0.1);
+            transition: all 0.3s;
+        }
+
+        .step-item.active {
+            color: #a5b4fc;
+            background: rgba(99, 102, 241, 0.15);
+            border-color: rgba(99, 102, 241, 0.3);
+        }
+
+        .step-item.done {
+            color: #22c55e;
+            background: rgba(34, 197, 94, 0.1);
+            border-color: rgba(34, 197, 94, 0.3);
+        }
+
+        .spinner {
+            width: 15px;
+            height: 15px;
+            border: 2px solid rgba(255, 255, 255, 0.25);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* PROJECT CARDS */
+        .results-header {
+            font-size: 11px;
+            color: #475569;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            margin-bottom: 10px;
+        }
+
+        .project-card {
+            background: linear-gradient(135deg, rgba(15, 23, 42, 0.8), rgba(30, 41, 59, 0.5));
+            border: 1px solid rgba(99, 102, 241, 0.15);
+            border-radius: 14px;
+            padding: 14px;
+            margin-bottom: 10px;
+            transition: border-color 0.2s, transform 0.15s;
+        }
+
+        .project-card:hover {
+            border-color: rgba(99, 102, 241, 0.45);
+            transform: translateX(-2px);
+        }
+
+        .card-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .card-platform {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            background: rgba(99, 102, 241, 0.15);
+            color: #a5b4fc;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 3px 9px;
+            border-radius: 20px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border: 1px solid rgba(99, 102, 241, 0.25);
+        }
+
+        .card-platform::before {
+            content: '';
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #818cf8;
+        }
+
+        .card-bid {
+            color: #4ade80;
+            font-size: 12px;
+            font-weight: 700;
+            background: rgba(34, 197, 94, 0.1);
+            padding: 3px 9px;
+            border-radius: 20px;
+            border: 1px solid rgba(34, 197, 94, 0.2);
+        }
+
+        .card-name {
+            color: #e2e8f0;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            line-height: 1.45;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            line-clamp: 2;
+            overflow: hidden;
+        }
+
+        .card-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .card-id {
+            color: #334155;
+            font-size: 10px;
+            font-family: 'Courier New', monospace;
+        }
+
+        .card-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            color: #818cf8;
+            text-decoration: none;
+            font-size: 11px;
+            font-weight: 600;
+            padding: 5px 11px;
+            background: rgba(99, 102, 241, 0.1);
+            border-radius: 8px;
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            transition: background 0.2s, color 0.2s;
+        }
+
+        .card-link:hover {
+            background: rgba(99, 102, 241, 0.25);
+            color: #c4b5fd;
+        }
+
+        /* EMPTY & ERROR */
+        .empty-state {
+            text-align: center;
+            padding: 28px 16px;
+        }
+
+        .empty-icon {
+            font-size: 40px;
+            margin-bottom: 10px;
+        }
+
+        .empty-title {
+            color: #475569;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        .empty-sub {
+            color: #334155;
+            font-size: 11px;
+            line-height: 1.5;
+        }
+
+        .error-card {
+            background: rgba(239, 68, 68, 0.06);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            border-radius: 12px;
+            padding: 14px;
+        }
+
+        .error-title {
+            color: #fca5a5;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .error-body {
+            color: #94a3b8;
+            font-size: 11px;
+            line-height: 1.5;
+        }
+
+        /* FOOTER */
+        .panel-footer {
+            padding: 10px 16px;
+            border-top: 1px solid rgba(99, 102, 241, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-shrink: 0;
+        }
+
+        .footer-info {
+            font-size: 10px;
+            color: #334155;
+        }
+
+        .footer-info span {
+            color: #22c55e;
+        }
+
+        .footer-model {
+            font-size: 10px;
+            color: #4338ca;
+            background: rgba(67, 56, 202, 0.1);
+            padding: 3px 8px;
+            border-radius: 6px;
+        }
+
+        /* ═══════════════════════════════════════════════
+       GAME STYLES
+    ════════════════════════════════════════════════ */
+        #game-tab {
+            display: none;
+        }
+
+        #game-tab.active {
+            display: block;
+        }
+
+        .game-header-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            padding: 8px 12px;
+            background: rgba(99, 102, 241, 0.08);
+            border-radius: 10px;
+            border: 1px solid rgba(99, 102, 241, 0.15);
+        }
+
+        .game-stat {
+            text-align: center;
+        }
+
+        .game-stat-label {
+            font-size: 9px;
+            color: #475569;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .game-stat-value {
+            font-size: 14px;
+            font-weight: 700;
+            color: #e2e8f0;
+        }
+
+        .game-stat-value.green {
+            color: #4ade80;
+        }
+
+        .game-stat-value.red {
+            color: #f87171;
+        }
+
+        #game-canvas {
+            display: block;
+            border-radius: 12px;
+            border: 1px solid rgba(99, 102, 241, 0.2);
+            width: 100%;
+            cursor: none;
+            background: #020817;
+        }
+
+        .game-controls {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .game-btn {
+            flex: 1;
+            padding: 9px;
+            border: none;
+            border-radius: 10px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .game-btn-start {
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            color: white;
+        }
+
+        .game-btn-start:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 16px rgba(34, 197, 94, 0.4);
+        }
+
+        .game-btn-reset {
+            background: rgba(99, 102, 241, 0.15);
+            color: #a5b4fc;
+            border: 1px solid rgba(99, 102, 241, 0.2);
+        }
+
+        .game-btn-reset:hover {
+            background: rgba(99, 102, 241, 0.25);
+        }
+
+        /* legend */
+        .game-legend {
+            display: flex;
+            gap: 6px;
+            margin-top: 8px;
+            flex-wrap: wrap;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 10px;
+            color: #475569;
+            background: rgba(255, 255, 255, 0.03);
+            padding: 4px 8px;
+            border-radius: 6px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        /* GAME OVER OVERLAY */
+        #game-over-overlay {
+            display: none;
+            position: absolute;
+            inset: 0;
+            z-index: 10;
+            background: rgba(6, 13, 31, 0.92);
+            border-radius: 22px;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 28px;
+            animation: fade-in 0.4s ease;
+        }
+
+        #game-over-overlay.show {
+            display: flex;
+        }
+
+        @keyframes fade-in {
+            from {
+                opacity: 0
+            }
+
+            to {
+                opacity: 1
+            }
+        }
+
+        .go-emoji {
+            font-size: 56px;
+            margin-bottom: 12px;
+            animation: bounce 0.6s ease infinite alternate;
+        }
+
+        @keyframes bounce {
+            from {
+                transform: translateY(0)
+            }
+
+            to {
+                transform: translateY(-8px)
+            }
+        }
+
+        .go-title {
+            font-size: 20px;
+            font-weight: 800;
+            color: #fff;
+            margin-bottom: 6px;
+        }
+
+        .go-subtitle {
+            font-size: 12px;
+            color: #94a3b8;
+            margin-bottom: 16px;
+            line-height: 1.6;
+        }
+
+        .go-saved {
+            background: linear-gradient(135deg, rgba(34, 197, 94, 0.15), rgba(34, 197, 94, 0.05));
+            border: 1px solid rgba(34, 197, 94, 0.3);
+            border-radius: 14px;
+            padding: 14px 20px;
+            margin-bottom: 16px;
+        }
+
+        .go-saved-label {
+            font-size: 11px;
+            color: #86efac;
+            margin-bottom: 4px;
+        }
+
+        .go-saved-amount {
+            font-size: 28px;
+            font-weight: 800;
+            color: #4ade80;
+        }
+
+        .go-punchline {
+            font-size: 11px;
+            color: #6366f1;
+            font-style: italic;
+            background: rgba(99, 102, 241, 0.1);
+            border-radius: 8px;
+            padding: 8px 12px;
+            margin-bottom: 16px;
+            line-height: 1.5;
+        }
+
+        .go-btn {
+            padding: 10px 24px;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 4px 16px rgba(99, 102, 241, 0.4);
+        }
+
+        .go-btn:hover {
+            transform: scale(1.05);
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="demo-bg"></div>
+    <div class="demo-text">Your App</div>
+
+    <!-- FAB -->
+    <button id="scout-fab" onclick="togglePanel()" title="Open Freelance Scout">
+        <div class="ring"></div>
+        <div class="ring ring2"></div>
+        <span id="fab-badge"></span>
+        🤖
+    </button>
+
+    <!-- Panel -->
+    <div id="scout-panel" style="position:fixed;">
+
+        <!-- Header -->
+        <div class="panel-header">
+            <div style="flex:1">
+                <div class="header-title">
+                    <div class="header-dot"></div>Freelance Scout AI
+                </div>
+                <div class="header-sub">Powered by Groq · Llama 3.3 70B</div>
+                <div class="header-skills">
+                    <span class="skill-chip">React</span>
+                    <span class="skill-chip">Python</span>
+                    <span class="skill-chip">AI Automation</span>
+                    <span class="skill-chip">FastAPI</span>
+                </div>
+            </div>
+            <button id="close-btn" onclick="togglePanel()">✕</button>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('scout')">🔍 Scout</button>
+            <button class="tab-btn" onclick="switchTab('game')">🎮 Tax Dodge</button>
+        </div>
+
+        <!-- Body -->
+        <div class="panel-body" style="position:relative;">
+
+            <!-- SCOUT TAB -->
+            <div id="scout-tab" class="tab-content active">
+                <button id="run-scout" onclick="runScout()">
+                    <span>🚀</span> Scout Freelance Gigs
+                </button>
+
+                <div id="progress-wrap">
+                    <div class="progress-label">
+                        <span id="progress-text">Initializing agents...</span>
+                        <span id="progress-pct">0%</span>
+                    </div>
+                    <div class="progress-bar-bg">
+                        <div class="progress-bar-fill" id="progress-fill"></div>
+                    </div>
+                    <div class="progress-steps">
+                        <div class="step-item" id="step-scraper">🔍 Scraper</div>
+                        <div class="step-item" id="step-extractor">📋 Extractor</div>
+                        <div class="step-item" id="step-matcher">✅ Matcher</div>
+                    </div>
+                    <div style="font-size:10px;color:#475569;text-align:center;margin-top:8px;">
+                        🎮 Play Tax Dodge while you wait!
+                    </div>
+                </div>
+
+                <div id="results-container">
+                    <div class="empty-state">
+                        <div class="empty-icon">💼</div>
+                        <div class="empty-title">No Gigs Loaded Yet</div>
+                        <div class="empty-sub">Hit the button above and let the AI agents hunt<br>Upwork, Fiverr &amp;
+                            Freelancer for you!<br><br>🎮 Try the <strong>Tax Dodge</strong> game while you wait!</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- GAME TAB -->
+            <div id="game-tab" class="tab-content">
+
+                <div class="game-header-bar">
+                    <div class="game-stat">
+                        <div class="game-stat-label">💰 Income</div>
+                        <div class="game-stat-value green" id="g-income">₹0</div>
+                    </div>
+                    <div class="game-stat">
+                        <div class="game-stat-label">💻 Expenses</div>
+                        <div class="game-stat-value green" id="g-expense">₹0</div>
+                    </div>
+                    <div class="game-stat">
+                        <div class="game-stat-label">🧾 Tax Dodged</div>
+                        <div class="game-stat-value red" id="g-taxdodged">₹0</div>
+                    </div>
+                    <div class="game-stat">
+                        <div class="game-stat-label">❤️ Lives</div>
+                        <div class="game-stat-value" id="g-lives">❤️❤️❤️❤️❤️</div>
+                    </div>
+                </div>
+
+                <canvas id="game-canvas" height="280"></canvas>
+
+                <div class="game-controls">
+                    <button class="game-btn game-btn-start" id="start-btn" onclick="startGame()">▶ Start Game</button>
+                    <button class="game-btn game-btn-reset" onclick="resetGame()">↺ Reset</button>
+                </div>
+
+                <div class="game-legend">
+                    <div class="legend-item">💰 Income +₹500</div>
+                    <div class="legend-item">💻 Expense +₹300</div>
+                    <div class="legend-item">🧾 Tax 💀 Dodge it!</div>
+                    <div class="legend-item">🏦 GST 💀 Avoid!</div>
+                </div>
+
+            </div>
+
+            <!-- GAME OVER OVERLAY (inside body for positioning) -->
+            <div id="game-over-overlay">
+                <div class="go-emoji" id="go-emoji">🎉</div>
+                <div class="go-title">Tax Optimization Complete!</div>
+                <div class="go-subtitle" id="go-subtitle">The AI Chartered Accountant has reviewed your gameplay.</div>
+                <div class="go-saved">
+                    <div class="go-saved-label">💰 Simulated Tax Savings</div>
+                    <div class="go-saved-amount" id="go-amount">₹0</div>
+                </div>
+                <div class="go-punchline" id="go-punchline">"Disclaimer: This game does not constitute legal tax advice.
+                    Please consult an actual CA. Or don't. We're not cops."</div>
+                <button class="go-btn" onclick="closeGameOver()">Play Again 🔄</button>
+            </div>
+
+        </div>
+
+        <!-- Footer -->
+        <div class="panel-footer">
+            <div class="footer-info">API: <span>10.10.227.15:8000</span></div>
+            <div class="footer-model">llama-3.3-70b</div>
+        </div>
+
+    </div>
+
+    <script>
+        /* ─────────────────────────────────────────
+           PANEL / TAB / SCOUT LOGIC
+        ───────────────────────────────────────── */
+        const API_URL = 'http://10.10.227.15:8000/scout';
+        let progressTimer = null;
+        let resultCount = 0;
+
+        function togglePanel() {
+            document.getElementById('scout-panel').classList.toggle('open');
+        }
+
+        function switchTab(tab) {
+            document.querySelectorAll('.tab-btn').forEach((b, i) => {
+                b.classList.toggle('active', (i === 0 && tab === 'scout') || (i === 1 && tab === 'game'));
+            });
+            document.getElementById('scout-tab').classList.toggle('active', tab === 'scout');
+            document.getElementById('game-tab').classList.toggle('active', tab === 'game');
+            if (tab === 'game') resizeCanvas();
+        }
+
+        function setProgress(pct, text, activeStep) {
+            document.getElementById('progress-fill').style.width = pct + '%';
+            document.getElementById('progress-pct').textContent = pct + '%';
+            document.getElementById('progress-text').textContent = text;
+            ['scraper', 'extractor', 'matcher'].forEach((s, i) => {
+                const el = document.getElementById('step-' + s);
+                el.classList.remove('active', 'done');
+                if (i < activeStep) el.classList.add('done');
+                else if (i === activeStep) el.classList.add('active');
+            });
+        }
+
+        function startProgressAnimation() {
+            let phaseIdx = 0, pct = 0;
+            const phases = [
+                [0, 10, 'Launching agents...', 0],
+                [10, 35, 'Scraper hunting Upwork & Fiverr...', 0],
+                [35, 60, 'Extractor parsing job details...', 1],
+                [60, 88, 'Matcher filtering by your skills...', 2],
+                [88, 96, 'Formatting results...', 2],
+            ];
+            progressTimer = setInterval(() => {
+                if (phaseIdx >= phases.length) return;
+                const [, end, text, s] = phases[phaseIdx];
+                pct = Math.min(pct + 0.8, end);
+                setProgress(Math.round(pct), text, s);
+                if (pct >= end) phaseIdx++;
+            }, 400);
+        }
+
+        function stopProgressAnimation(success) {
+            clearInterval(progressTimer);
+            if (success) {
+                setProgress(100, 'Done! Gigs found ✅', 3);
+                setTimeout(() => { document.getElementById('progress-wrap').style.display = 'none'; }, 1500);
+            }
+        }
+
+        async function runScout() {
+            const btn = document.getElementById('run-scout');
+            const container = document.getElementById('results-container');
+            const progressWrap = document.getElementById('progress-wrap');
+
+            btn.disabled = true;
+            btn.innerHTML = '<div class="spinner"></div> Agents Scouting...';
+            container.innerHTML = '';
+            progressWrap.style.display = 'block';
+            startProgressAnimation();
+
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        topic: "Freelance projects Web Development React Python AI Automation Upwork Fiverr Freelancer",
+                        skills: "Software/Web development (React, Python), AI automation, FastAPI"
+                    })
+                });
+                const data = await response.json();
+                if (!response.ok) throw new Error(data.detail || `Server error ${response.status}`);
+                stopProgressAnimation(true);
+                const projects = data.projects || [];
+                resultCount = projects.length;
+                renderProjects(projects);
+                updateBadge(resultCount);
+            } catch (err) {
+                stopProgressAnimation(false);
+                container.innerHTML = `<div class="error-card">
+      <div class="error-title">⚠️ Agent Error</div>
+      <div class="error-body">${escHtml(err.message)}<br><br>
+        <strong>Tips:</strong><br>• Ensure uvicorn running on port 8000<br>
+        • Rate limits: wait 35s and retry<br>• Check .env has valid GROQ_API_KEY
+      </div></div>`;
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<span>🔄</span> Refresh Gigs';
+            }
+        }
+
+        function renderProjects(projects) {
+            const container = document.getElementById('results-container');
+            if (!projects.length) {
+                container.innerHTML = `<div class="empty-state"><div class="empty-icon">🔎</div>
+      <div class="empty-title">No Matches Found</div>
+      <div class="empty-sub">Try again in a few minutes.</div></div>`;
+                return;
+            }
+            const icons = { upwork: '🟢', fiverr: '🟣', freelancer: '🔵', toptal: '🔴', guru: '🟠' };
+            container.innerHTML = `<div class="results-header">🎯 ${projects.length} Matching Projects</div>` +
+                projects.map(p => {
+                    const icon = icons[(p.platform || '').toLowerCase()] || '⚪';
+                    return `<div class="project-card">
+        <div class="card-top">
+          <span class="card-platform">${icon} ${escHtml(p.platform || 'Unknown')}</span>
+          <span class="card-bid">${escHtml(p.bid || 'N/A')}</span>
+        </div>
+        <div class="card-name">${escHtml(p.name)}</div>
+        <div class="card-footer">
+          <span class="card-id">#${escHtml(p.project_id)}</span>
+          <a class="card-link" href="${escHtml(p.project_url)}" target="_blank" rel="noopener">
+            Apply <svg width="10" height="10" viewBox="0 0 12 12" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 10L10 2M5 2h5v5"/></svg>
+          </a>
+        </div>
+      </div>`;
+                }).join('');
+        }
+
+        function updateBadge(count) {
+            const b = document.getElementById('fab-badge');
+            if (count > 0) { b.textContent = count; b.style.display = 'flex'; }
+        }
+
+        function escHtml(str) {
+            const d = document.createElement('div');
+            d.textContent = String(str || '');
+            return d.innerHTML;
+        }
+
+        /* ─────────────────────────────────────────
+           🎮 TAX DODGE GAME
+        ───────────────────────────────────────── */
+        const ITEMS = [
+            { emoji: '💰', type: 'income', value: 500, label: '+₹500', catch: true, color: '#4ade80' },
+            { emoji: '💻', type: 'expense', value: 300, label: '+₹300', catch: true, color: '#60a5fa' },
+            { emoji: '🪙', type: 'income', value: 200, label: '+₹200', catch: true, color: '#fbbf24' },
+            { emoji: '🧾', type: 'tax', value: 1000, label: '-₹1000', catch: false, color: '#f87171' },
+            { emoji: '🏦', type: 'gst', value: 1500, label: '-₹1500', catch: false, color: '#f87171' },
+            { emoji: '📄', type: 'tax', value: 800, label: '-₹800', catch: false, color: '#fb923c' },
+        ];
+
+        const PUNCHLINES = [
+            '"Your CA would be proud. Or fired. Hard to say."',
+            '"The IT Department has been notified. Just kidding. Maybe."',
+            '"Section 80C has entered the chat."',
+            '"You technically optimized your portfolio. Legally. We think."',
+            '"You collected more than your freelance projects probably will 😅"',
+            '"Congratulations! Your effective tax rate is now ₹0. In the game."',
+        ];
+
+        let canvas, ctx, gameRunning = false, animId = null;
+        let basket, items, lives, income, expense, taxDodged, frameCount, speed;
+
+        function resizeCanvas() {
+            canvas = document.getElementById('game-canvas');
+            if (!canvas) return;
+            const w = canvas.parentElement.clientWidth - 32;
+            canvas.width = w;
+            canvas.height = 280;
+            if (basket) basket.x = Math.min(basket.x, canvas.width - basket.w);
+            if (!gameRunning) drawIdle();
+        }
+
+        function initGame() {
+            canvas = document.getElementById('game-canvas');
+            ctx = canvas.getContext('2d');
+            resizeCanvas();
+            basket = { x: canvas.width / 2 - 36, y: canvas.height - 50, w: 72, h: 28, speed: 7 };
+            items = [];
+            lives = 5;
+            income = 0;
+            expense = 0;
+            taxDodged = 0;
+            frameCount = 0;
+            speed = 2;
+            updateHUD();
+        }
+
+        function resetGame() {
+            cancelAnimationFrame(animId);
+            gameRunning = false;
+            document.getElementById('game-over-overlay').classList.remove('show');
+            document.getElementById('start-btn').textContent = '▶ Start Game';
+            initGame();
+        }
+
+        function startGame() {
+            if (gameRunning) return;
+            document.getElementById('game-over-overlay').classList.remove('show');
+            initGame();
+            gameRunning = true;
+            document.getElementById('start-btn').textContent = '⏸ Playing...';
+            document.getElementById('start-btn').disabled = true;
+            loop();
+        }
+
+        const keys = {};
+        window.addEventListener('keydown', e => { keys[e.key] = true; });
+        window.addEventListener('keyup', e => { keys[e.key] = false; });
+
+        // Mouse / touch
+        function onMouseMove(e) {
+            if (!gameRunning || !basket || !canvas) return;
+            const rect = canvas.getBoundingClientRect();
+            const scaleX = canvas.width / rect.width;
+            const cx = ((e.clientX ?? e.touches?.[0]?.clientX ?? 0) - rect.left) * scaleX;
+            basket.x = Math.max(0, Math.min(canvas.width - basket.w, cx - basket.w / 2));
+        }
+        document.addEventListener('mousemove', onMouseMove);
+        document.addEventListener('touchmove', e => { if (e.target === canvas) e.preventDefault(); onMouseMove(e); }, { passive: false });
+
+        function spawnItem() {
+            const tmpl = ITEMS[Math.floor(Math.random() * ITEMS.length)];
+            const x = Math.random() * (canvas.width - 36) + 18;
+            items.push({ ...tmpl, x, y: -24, size: 26 + Math.random() * 8, vy: speed + Math.random() * 1.5 });
+        }
+
+        const floatingTexts = [];
+        function addFloatText(x, y, text, color) {
+            floatingTexts.push({ x, y, text, color, alpha: 1, vy: -1.5 });
+        }
+
+        function loop() {
+            if (!gameRunning) return;
+            animId = requestAnimationFrame(loop);
+            frameCount++;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Speed ramp every 360 frames
+            if (frameCount % 360 === 0) speed = Math.min(speed + 0.25, 6);
+
+            // Spawn
+            if (frameCount % Math.max(45 - Math.floor(speed * 4), 18) === 0) spawnItem();
+
+            // Move basket with keyboard
+            if ((keys['ArrowLeft'] || keys['a']) && basket.x > 0) basket.x -= basket.speed;
+            if ((keys['ArrowRight'] || keys['d']) && basket.x < canvas.width - basket.w) basket.x += basket.speed;
+
+            drawBackground();
+            drawBasket();
+            updateItems();
+            updateFloatTexts();
+
+            if (flashAlpha > 0) {
+                ctx.fillStyle = `rgba(239, 68, 68, ${flashAlpha})`;
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                flashAlpha = Math.max(flashAlpha - 0.04, 0);
+            }
+
+            if (lives <= 0) endGame();
+        }
+
+        function drawBackground() {
+            ctx.fillStyle = '#020817';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            // grid lines
+            ctx.strokeStyle = 'rgba(99,102,241,0.04)';
+            ctx.lineWidth = 1;
+            for (let x = 0; x < canvas.width; x += 40) {
+                ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); ctx.stroke();
+            }
+            for (let y = 0; y < canvas.height; y += 40) {
+                ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); ctx.stroke();
+            }
+        }
+
+        function drawBasket() {
+            const b = basket;
+            const grad = ctx.createLinearGradient(b.x, b.y, b.x, b.y + b.h);
+            grad.addColorStop(0, '#6366f1');
+            grad.addColorStop(1, '#4338ca');
+            ctx.fillStyle = grad;
+            ctx.beginPath();
+            ctx.roundRect(b.x, b.y, b.w, b.h, 8);
+            ctx.fill();
+            // glow
+            ctx.shadowColor = '#6366f1';
+            ctx.shadowBlur = 16;
+            ctx.strokeStyle = '#818cf8';
+            ctx.lineWidth = 1.5;
+            ctx.stroke();
+            ctx.shadowBlur = 0;
+            // emoji
+            ctx.font = '14px serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('🧺', b.x + b.w / 2, b.y + b.h / 2 + 5);
+        }
+
+        function updateItems() {
+            for (let i = items.length - 1; i >= 0; i--) {
+                const it = items[i];
+                it.y += it.vy;
+
+                // Draw item
+                ctx.font = `${it.size}px serif`;
+                ctx.textAlign = 'center';
+                ctx.fillStyle = '#fff';
+                ctx.shadowColor = it.color;
+                ctx.shadowBlur = 10;
+                ctx.fillText(it.emoji, it.x, it.y);
+                ctx.shadowBlur = 0;
+
+                // Collision with basket
+                const hw = it.size / 2;
+                if (it.y + hw / 2 >= basket.y && it.y - hw / 2 <= basket.y + basket.h &&
+                    it.x + hw >= basket.x && it.x - hw <= basket.x + basket.w) {
+                    if (it.catch) {
+                        if (it.type === 'income') income += it.value;
+                        else expense += it.value;
+                        addFloatText(it.x, it.y, it.label, it.color);
+                        updateHUD();
+                    } else {
+                        lives--;
+                        taxDodged += it.value; // oops — not dodged
+                        addFloatText(it.x, it.y, '💀 TAX!', '#f87171');
+                        flashScreen();
+                        updateHUD();
+                    }
+                    items.splice(i, 1);
+                    continue;
+                }
+
+                // Missed good items (no penalty), missed bad items = money saved
+                if (it.y > canvas.height + 20) {
+                    if (!it.catch) {
+                        // Successfully dodged!
+                        addFloatText(it.x, canvas.height - 20, '😂 Dodged!', '#4ade80');
+                    }
+                    items.splice(i, 1);
+                }
+            }
+        }
+
+        let flashAlpha = 0;
+        function flashScreen() { flashAlpha = 0.35; }
+
+        function updateFloatTexts() {
+            for (let i = floatingTexts.length - 1; i >= 0; i--) {
+                const ft = floatingTexts[i];
+                ft.y += ft.vy;
+                ft.alpha -= 0.025;
+                ctx.globalAlpha = Math.max(ft.alpha, 0);
+                ctx.font = 'bold 13px Inter, sans-serif';
+                ctx.textAlign = 'center';
+                ctx.fillStyle = ft.color;
+                ctx.fillText(ft.text, ft.x, ft.y);
+                ctx.globalAlpha = 1;
+                if (ft.alpha <= 0) floatingTexts.splice(i, 1);
+            }
+        }
+
+        function updateHUD() {
+            document.getElementById('g-income').textContent = '₹' + income.toLocaleString('en-IN');
+            document.getElementById('g-expense').textContent = '₹' + expense.toLocaleString('en-IN');
+            document.getElementById('g-taxdodged').textContent = '₹' + taxDodged.toLocaleString('en-IN');
+            document.getElementById('g-lives').textContent = lives > 0 ? '❤️'.repeat(Math.max(0, lives)) : '💀';
+        }
+
+        function drawIdle() {
+            if (!canvas || !ctx) return;
+            ctx.fillStyle = '#020817';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.textAlign = 'center';
+            ctx.font = '28px serif';
+            ctx.fillText('🎮', canvas.width / 2, canvas.height / 2 - 18);
+            ctx.font = 'bold 13px Inter, sans-serif';
+            ctx.fillStyle = '#334155';
+            ctx.fillText('Click ▶ Start to play Tax Dodge!', canvas.width / 2, canvas.height / 2 + 12);
+            ctx.font = '11px Inter, sans-serif';
+            ctx.fillStyle = '#1e293b';
+            ctx.fillText('Move mouse left/right to control the basket', canvas.width / 2, canvas.height / 2 + 32);
+        }
+
+        function endGame() {
+            gameRunning = false;
+            cancelAnimationFrame(animId);
+            document.getElementById('start-btn').textContent = '▶ Start Game';
+            document.getElementById('start-btn').disabled = false;
+
+            const saved = income + expense; // income + expenses "deductions"
+            const emoji = saved > 5000 ? '🤑' : saved > 2000 ? '😎' : '😅';
+            const punchline = PUNCHLINES[Math.floor(Math.random() * PUNCHLINES.length)];
+            const messages = [
+                `While the AI was scouting, you "saved" ₹${saved.toLocaleString('en-IN')} in simulated taxes!`,
+                `Your virtual CA has filed returns. Savings: ₹${saved.toLocaleString('en-IN')}. Legal status: 😂`,
+                `The GST portal is currently down. But you dodged ₹${taxDodged.toLocaleString('en-IN')} in taxes anyway!`
+            ];
+
+            document.getElementById('go-emoji').textContent = emoji;
+            document.getElementById('go-amount').textContent = `₹${saved.toLocaleString('en-IN')}`;
+            document.getElementById('go-subtitle').textContent = messages[Math.floor(Math.random() * messages.length)];
+            document.getElementById('go-punchline').textContent = punchline;
+            document.getElementById('game-over-overlay').classList.add('show');
+        }
+
+        function closeGameOver() {
+            document.getElementById('game-over-overlay').classList.remove('show');
+            resetGame();
+        }
+
+        // Init on tab switch
+        window.addEventListener('DOMContentLoaded', () => {
+            setTimeout(resizeCanvas, 100);
+        });
+        window.addEventListener('resize', resizeCanvas);
+    </script>
+</body>
+
+</html>

@@ -1,5 +1,22 @@
 # React + TypeScript + Vite
 
+## Supabase Backend Setup
+
+This project now reads and writes project/time-log data from Supabase.
+
+1. Copy `.env.example` to `.env.local` and fill in:
+  - `VITE_SUPABASE_URL`
+  - `VITE_SUPABASE_ANON_KEY`
+2. Open your Supabase SQL Editor and run `supabase/schema.sql`.
+3. Ensure users are authenticated before loading dashboard/project pages.
+
+The SQL file creates:
+- `public.settings` (optional user-level defaults)
+- `public.projects`
+- `public.sessions`
+
+It also enables Row Level Security (RLS) and adds owner-only policies for select/insert/update/delete.
+
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
 Currently, two official plugins are available:

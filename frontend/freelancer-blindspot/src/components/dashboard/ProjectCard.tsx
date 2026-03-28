@@ -1,12 +1,13 @@
 import { motion } from 'framer-motion'
 import { useNavigate } from 'react-router-dom'
-import { Sparkles } from 'lucide-react'
+import { Sparkles, Play } from 'lucide-react'
 import type { ProjectWithStats } from '../../types'
 
 interface ProjectCardProps {
   project: ProjectWithStats
   delay?: number
   onTriggerPIP?: (p: ProjectWithStats) => void
+  onStartTimer?: (project: ProjectWithStats, isBillable: boolean) => void
 }
 
 const riskColors = {
@@ -21,7 +22,7 @@ const clientRiskColors = {
   bad:   { color: '#d94343', label: '🚨 Bad Client'   },
 }
 
-export default function ProjectCard({ project, delay = 0, onTriggerPIP }: ProjectCardProps) {
+export default function ProjectCard({ project, delay = 0, onTriggerPIP, onStartTimer }: ProjectCardProps) {
   const navigate = useNavigate()
   const rc  = riskColors[project.stats.riskLevel]
   const crc = clientRiskColors[project.clientRisk]
@@ -30,6 +31,11 @@ export default function ProjectCard({ project, delay = 0, onTriggerPIP }: Projec
   const handlePIP = (e: React.MouseEvent) => {
     e.stopPropagation()
     onTriggerPIP?.(project)
+  }
+
+  const handleStartTimer = (e: React.MouseEvent, isBillable: boolean) => {
+    e.stopPropagation()
+    onStartTimer?.(project, isBillable)
   }
 
   return (
@@ -122,6 +128,56 @@ export default function ProjectCard({ project, delay = 0, onTriggerPIP }: Projec
             <Sparkles size={14} /> PIP
           </motion.button>
         )}
+      </div>
+
+      {/* Timer Action Buttons */}
+      <div style={{ display: 'flex', gap: 12, marginTop: 16 }}>
+        <motion.button
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          onClick={(e) => handleStartTimer(e, true)}
+          style={{
+            flex: 1,
+            background: '#32a852',
+            color: 'white',
+            border: 'none',
+            borderRadius: 12,
+            padding: '10px 14px',
+            fontSize: 12,
+            fontWeight: 700,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 6,
+            cursor: 'pointer',
+            fontFamily: 'Plus Jakarta Sans, sans-serif',
+          }}
+        >
+          <Play size={14} /> Start Billable
+        </motion.button>
+        <motion.button
+          whileHover={{ scale: 1.02 }}
+          whileTap={{ scale: 0.98 }}
+          onClick={(e) => handleStartTimer(e, false)}
+          style={{
+            flex: 1,
+            background: '#e09200',
+            color: 'white',
+            border: 'none',
+            borderRadius: 12,
+            padding: '10px 14px',
+            fontSize: 12,
+            fontWeight: 700,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 6,
+            cursor: 'pointer',
+            fontFamily: 'Plus Jakarta Sans, sans-serif',
+          }}
+        >
+          <Play size={14} /> Start Overhead
+        </motion.button>
       </div>
 
       <div style={{

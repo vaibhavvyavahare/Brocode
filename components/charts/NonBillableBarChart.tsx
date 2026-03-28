@@ -1,10 +1,13 @@
 import React, { useEffect } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import Svg, { Rect } from 'react-native-svg';
-import Animated, { useSharedValue, useAnimatedProps, withTiming, Easing } from 'react-native-reanimated';
-import { COLORS, TEXT_STYLES } from '../../constants/theme';
-
-const AnimatedRect = Animated.createAnimatedComponent(Rect);
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+  withDelay,
+  Easing,
+} from 'react-native-reanimated';
+import { COLORS } from '../../constants/theme';
 
 interface NonBillableBarChartProps {
   data: {
@@ -16,88 +19,84 @@ interface NonBillableBarChartProps {
 }
 
 const CATEGORIES = [
-  { key: 'communication', label: 'Communication', color: '#7c3aed' },
-  { key: 'revisions', label: 'Revisions', color: '#f59e0b' },
-  { key: 'admin', label: 'Admin', color: '#06b6d4' },
-  { key: 'scope', label: 'Scope Additions', color: '#ef4444' },
-] as const;
+  { key: 'communication', label: 'Communication', opacityMult: 1.0 },
+  { key: 'revisions',     label: 'Revisions',     opacityMult: 0.75 },
+  { key: 'admin',         label: 'Admin',          opacityMult: 0.55 },
+  { key: 'scope',         label: 'Scope creep',   opacityMult: 0.35 },
+];
+
+function AnimatedBar({ width, delay, opacity }: { width: number; delay: number; opacity: number }) {
+  const animWidth = useSharedValue(0);
+
+  useEffect(() => {
+    animWidth.value = withDelay(delay, withTiming(width, {
+      duration: 700,
+      easing: Easing.out(Easing.cubic),
+    }));
+  }, [width]);
+
+  const style = useAnimatedStyle(() => ({
+    width: `${animWidth.value}%`,
+    opacity,
+    height: '100%',
+    backgroundColor: COLORS.gold,
+    borderRadius: 999,
+  }));
+
+  return <Animated.View style={style} />;
+}
 
 export default function NonBillableBarChart({ data }: NonBillableBarChartProps) {
-  const maxHours = Math.max(...Object.values(data), 1);
-  const CHART_WIDTH = 200;
+  const values = CATEGORIES.map(c => data[c.key as keyof typeof data] || 0);
+  const maxVal = Math.max(...values, 0.1);
 
   return (
     <View style={styles.container}>
-      {CATEGORIES.map((cat) => (
-        <BarRow 
-          key={cat.key} 
-          label={cat.label} 
-          hours={(data as any)[cat.key] || 0} 
-          maxHours={maxHours} 
-          color={cat.color} 
-          width={CHART_WIDTH}
-        />
-      ))}
+      {CATEGORIES.map((cat, i) => {
+        const val = data[cat.key as keyof typeof data] || 0;
+        const widthPct = (val / maxVal) * 100;
+
+        return (
+          <View key={cat.key} style={styles.row}>
+            <Text style={styles.label}>{cat.label}</Text>
+            <View style={styles.track}>
+              <AnimatedBar width={widthPct} delay={i * 100} opacity={cat.opacityMult} />
+            </View>
+            <Text style={styles.value}>{val.toFixed(1)}h</Text>
+          </View>
+        );
+      })}
     </View>
   );
 }
 
-const BarRow = ({ label, hours, maxHours, color, width }: any) => {
-  const progress = useSharedValue(0);
-
-  useEffect(() => {
-    progress.value = withTiming(hours / maxHours, {
-      duration: 1000,
-      easing: Easing.out(Easing.cubic),
-    });
-  }, [hours, maxHours]);
-
-  const animatedProps = useAnimatedProps(() => ({
-    width: Math.max(progress.value * width, 2),
-  }));
-
-  return (
-    <View style={styles.row}>
-      <Text style={styles.ylabel}>{label}</Text>
-      <View style={styles.barContainer}>
-        <Svg width={width} height={16}>
-          <Rect x="0" y="0" width={width} height={16} rx={8} fill={COLORS.surface2} />
-          <AnimatedRect 
-            x="0" 
-            y="0" 
-            height={16} 
-            rx={8} 
-            fill={color} 
-            animatedProps={animatedProps} 
-          />
-        </Svg>
-        <Text style={styles.hoursLabel}>{hours.toFixed(1)}h</Text>
-      </View>
-    </View>
-  );
-};
-
 const styles = StyleSheet.create({
   container: {
-    width: '100%',
-    paddingVertical: 12,
+    gap: 16,
   },
   row: {
-    marginBottom: 16,
-  },
-  ylabel: {
-    ...TEXT_STYLES.body,
-    fontSize: 13,
-    marginBottom: 8,
-  },
-  barContainer: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: 12,
   },
-  hoursLabel: {
-    fontFamily: 'SpaceMono_400Regular',
-    color: COLORS.text,
+  label: {
+    fontFamily: 'Inter_400Regular',
     fontSize: 13,
-    marginLeft: 12,
+    color: COLORS.muted,
+    width: 110,
+  },
+  track: {
+    flex: 1,
+    height: 8,
+    backgroundColor: COLORS.bgAlt,
+    borderRadius: 999,
+    overflow: 'hidden',
+  },
+  value: {
+    fontFamily: 'PlayfairDisplay_700Bold',
+    fontSize: 14,
+    color: COLORS.fg,
+    width: 36,
+    textAlign: 'right',
   },
 });

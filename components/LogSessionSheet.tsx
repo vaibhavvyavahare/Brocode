@@ -108,7 +108,7 @@ export default function LogSessionSheet({
     previewRate = newTotalHours > 0 ? totalValue / newTotalHours : 0;
   }
 
-  const previewColor = previewRate >= rateFloor * 1.2 ? COLORS.green : (previewRate >= rateFloor ? COLORS.amber : COLORS.red);
+  const previewColor = previewRate >= rateFloor * 1.2 ? COLORS.green : (previewRate >= rateFloor ? COLORS.gold : '#991b1b');
 
   return (
     <BottomSheet
@@ -148,11 +148,11 @@ export default function LogSessionSheet({
               <Text style={[styles.typeText, type === 'billable' && { color: COLORS.green }]}>Billable</Text>
             </Pressable>
             <Pressable 
-              style={[styles.typeCard, type === 'nonbillable' && { borderColor: COLORS.amber }]}
+              style={[styles.typeCard, type === 'nonbillable' && { borderColor: COLORS.gold }]}
               onPress={() => setType('nonbillable')}
             >
               <Text style={styles.typeIcon}>⚙️</Text>
-              <Text style={[styles.typeText, type === 'nonbillable' && { color: COLORS.amber }]}>Non-Billable</Text>
+              <Text style={[styles.typeText, type === 'nonbillable' && { color: COLORS.goldDark }]}>Non-Billable</Text>
             </Pressable>
           </View>
         </View>
@@ -208,55 +208,113 @@ export default function LogSessionSheet({
 }
 
 const styles = StyleSheet.create({
-  sheetBackground: { backgroundColor: COLORS.surface },
-  handleIndicator: { backgroundColor: COLORS.border, width: 40 },
-  contentContainer: { padding: 24 },
-  sheetTitle: { ...TEXT_STYLES.heading2, marginBottom: 24 },
-  inputGroup: { marginBottom: 20 },
-  label: { ...TEXT_STYLES.label, marginBottom: 8 },
-  input: {
-    backgroundColor: COLORS.surface2,
-    borderRadius: 10,
-    padding: 12,
-    color: COLORS.text,
-    fontFamily: 'Syne_400Regular',
-    fontSize: 14,
-    minHeight: 48,
+  sheetBackground: { backgroundColor: COLORS.white },
+  handleIndicator: { backgroundColor: 'rgba(0,0,0,0.15)', width: 40 },
+  contentContainer: { padding: 28 },
+  sheetTitle: {
+    fontFamily: 'PlayfairDisplay_700Bold',
+    fontSize: 26,
+    color: COLORS.fg,
+    marginBottom: 28,
   },
-  monoInput: { fontFamily: 'SpaceMono_400Regular' },
-  conversionText: { ...TEXT_STYLES.muted, marginTop: 4, fontFamily: 'SpaceMono_400Regular' },
+  inputGroup: { marginBottom: 20 },
+  label: {
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 11,
+    color: COLORS.muted,
+    textTransform: 'uppercase' as const,
+    letterSpacing: 0.7,
+    marginBottom: 8,
+  },
+  input: {
+    backgroundColor: COLORS.bgAlt,
+    borderRadius: 14,
+    padding: 14,
+    color: COLORS.fg,
+    fontFamily: 'Inter_400Regular',
+    fontSize: 15,
+    minHeight: 48,
+    borderWidth: 1.5,
+    borderColor: 'transparent',
+  },
+  monoInput: { fontFamily: 'PlayfairDisplay_700Bold', fontSize: 22 },
+  conversionText: {
+    fontFamily: 'Inter_400Regular',
+    fontSize: 12,
+    color: COLORS.muted,
+    marginTop: 6,
+  },
   typeRow: { flexDirection: 'row', gap: 12 },
   typeCard: {
     flex: 1,
-    backgroundColor: COLORS.surface2,
+    backgroundColor: COLORS.bgAlt,
     borderWidth: 2,
     borderColor: 'transparent',
-    borderRadius: 12,
+    borderRadius: 16,
     padding: 16,
     alignItems: 'center',
   },
   typeIcon: { fontSize: 24, marginBottom: 8 },
-  typeText: { ...TEXT_STYLES.heading3, color: COLORS.muted },
+  typeText: {
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 14,
+    color: COLORS.muted,
+  },
   tagsContainer: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   tag: {
-    backgroundColor: COLORS.surface2,
+    backgroundColor: COLORS.bgAlt,
     paddingHorizontal: 16,
     paddingVertical: 10,
-    borderRadius: 20,
+    borderRadius: 999,
   },
-  tagActive: { backgroundColor: COLORS.accent },
-  tagText: { ...TEXT_STYLES.body, color: COLORS.text },
-  tagTextActive: { fontFamily: 'Syne_600SemiBold' },
+  tagActive: { backgroundColor: COLORS.fg },
+  tagText: {
+    fontFamily: 'Inter_500Medium',
+    fontSize: 13,
+    color: COLORS.muted,
+  },
+  tagTextActive: {
+    fontFamily: 'Inter_600SemiBold',
+    color: COLORS.white,
+  },
   previewRow: {
-    backgroundColor: COLORS.surface2,
-    padding: 16,
-    borderRadius: 12,
+    backgroundColor: COLORS.bgAlt,
+    padding: 20,
+    borderRadius: 16,
     marginBottom: 20,
     alignItems: 'center',
   },
-  previewText: { ...TEXT_STYLES.body, color: COLORS.muted, marginBottom: 4 },
-  previewRate: { fontFamily: 'SpaceMono_700Bold', fontSize: 20 },
-  errorText: { ...TEXT_STYLES.body, color: COLORS.red, marginBottom: 16 },
-  submitBtn: { backgroundColor: COLORS.accent, paddingVertical: 16, borderRadius: 12, alignItems: 'center' },
-  submitBtnText: { ...TEXT_STYLES.heading3, color: '#fff' },
+  previewText: {
+    fontFamily: 'Inter_400Regular',
+    fontSize: 13,
+    color: COLORS.muted,
+    marginBottom: 6,
+  },
+  previewRate: {
+    fontFamily: 'PlayfairDisplay_700Bold',
+    fontSize: 24,
+  },
+  errorText: {
+    fontFamily: 'Inter_400Regular',
+    fontSize: 13,
+    color: '#991b1b',
+    marginBottom: 16,
+  },
+  submitBtn: {
+    backgroundColor: COLORS.fg,
+    paddingVertical: 16,
+    borderRadius: 999,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.25,
+    shadowRadius: 16,
+    elevation: 6,
+  } as any,
+  submitBtnText: {
+    fontFamily: 'Inter_600SemiBold',
+    fontSize: 15,
+    color: COLORS.white,
+    letterSpacing: 0.02,
+  },
 });

@@ -1,8 +1,8 @@
 import React, { useEffect, useState, useRef, useCallback } from 'react';
-import { View, Text, StyleSheet, ScrollView, Pressable, RefreshControl, Linking, Alert } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, Pressable, RefreshControl, Linking, Alert, Platform } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { Project, getProjects, deleteProject } from '../../services/projectService';
-import { Session, getSessions, deleteSession } from '../../services/sessionService';
+import { Session, getSessions, deleteSession, logSession } from '../../services/sessionService';
 import { useGlobalStore } from '../../stores/globalStore';
 import { useTimerStore } from '../../stores/timerStore';
 import { COLORS, TEXT_STYLES } from '../../constants/theme';
@@ -98,8 +98,36 @@ export default function ProjectDetail() {
   
   const handleJoinMeet = () => {
     if (project.meetUrl) {
-      Linking.openURL(project.meetUrl);
-      startTimer(project.id, project.title, 'nonbillable', 'communication');
+      if (Platform.OS === 'web') {
+        const win = window.open(project.meetUrl, '_blank');
+        startTimer(project.id, project.title, 'nonbillable', 'communication');
+        
+        const poll = setInterval(async () => {
+          if (win?.closed) {
+            clearInterval(poll);
+            const timerState = useTimerStore.getState();
+            if (timerState.isRunning && timerState.projectId === project.id) {
+               const data = timerState.stopTimer();
+               if (data.projectId) {
+                 await logSession({
+                   projectId: data.projectId,
+                   type: data.type,
+                   nbCategory: data.nbCategory as any,
+                   hours: data.hours,
+                   note: 'Google Meet Session',
+                   startedAt: new Date(Date.now() - data.hours * 3600000).toISOString(),
+                   endedAt: new Date().toISOString(),
+                 });
+                 loadData();
+                 Alert.alert('Meet Ended', `Logged ${data.hours.toFixed(2)}h for the meeting.`);
+               }
+            }
+          }
+        }, 1000);
+      } else {
+        Linking.openURL(project.meetUrl);
+        startTimer(project.id, project.title, 'nonbillable', 'communication');
+      }
     } else {
       Alert.alert('No Meet URL', 'Please edit project to add a Google Meet link.');
     }
@@ -200,7 +228,7 @@ export default function ProjectDetail() {
           </View>
           <View style={styles.statBox}>
             <Text style={styles.statBoxLabel}>NON-BILL</Text>
-            <Text style={[styles.statBoxVal, { color: COLORS.amber }]}>{nonBillableHours.toFixed(1)}h</Text>
+            <Text style={[styles.statBoxVal, { color: COLORS.gold }]}>{nonBillableHours.toFixed(1)}h</Text>
           </View>
         </View>
 
@@ -213,7 +241,7 @@ export default function ProjectDetail() {
                 styles.budgetFill, 
                 { 
                   width: `${Math.min(budgetUsedPercent, 100)}%`, 
-                  backgroundColor: budgetUsedPercent > 90 ? COLORS.red : (budgetUsedPercent > 70 ? COLORS.amber : COLORS.green)
+                  backgroundColor: budgetUsedPercent > 90 ? COLORS.red : (budgetUsedPercent > 70 ? COLORS.gold : COLORS.green)
                 }
               ]} 
             />
@@ -246,7 +274,7 @@ export default function ProjectDetail() {
                     </View>
                   ) : (
                     <View style={[styles.tag, { backgroundColor: 'rgba(245,158,11,0.2)' }]}>
-                      <Text style={[styles.tagText, { color: COLORS.amber }]}>{s.nbCategory}</Text>
+                      <Text style={[styles.tagText, { color: COLORS.gold }]}>{s.nbCategory}</Text>
                     </View>
                   )}
                 </View>

@@ -1,28 +1,42 @@
 import { Tabs } from 'expo-router';
-import { Grid2x2, Folder } from 'lucide-react-native';
-import { StyleSheet, View } from 'react-native';
+import { LayoutDashboard, FolderOpen } from 'lucide-react-native';
+import { StyleSheet, Platform } from 'react-native';
 import { COLORS } from '../../constants/theme';
 
 export default function TabLayout() {
+  // On web we have a sidebar, so we can hide the tab bar
+  if (Platform.OS === 'web') {
+    return (
+      <Tabs
+        screenOptions={{
+          headerShown: false,
+          tabBarStyle: { display: 'none' },
+          sceneStyle: { backgroundColor: COLORS.bg },
+        }}
+      >
+        <Tabs.Screen name="index" options={{ title: 'Dashboard' }} />
+        <Tabs.Screen name="projects" options={{ title: 'Projects' }} />
+      </Tabs>
+    );
+  }
+
   return (
     <Tabs
       screenOptions={{
         headerShown: false,
         tabBarStyle: styles.tabBar,
-        tabBarActiveTintColor: COLORS.accent,
+        tabBarActiveTintColor: COLORS.gold,
         tabBarInactiveTintColor: COLORS.muted,
         tabBarLabelStyle: styles.tabBarLabel,
-        sceneStyle: { backgroundColor: COLORS.bg }
+        sceneStyle: { backgroundColor: COLORS.bg },
       }}
     >
       <Tabs.Screen
         name="index"
         options={{
           title: 'Dashboard',
-          tabBarIcon: ({ color, focused }) => (
-            <View style={focused ? styles.activeIconContainer : null}>
-              <Grid2x2 color={color} size={24} />
-            </View>
+          tabBarIcon: ({ color }) => (
+            <LayoutDashboard color={color} size={22} />
           ),
         }}
       />
@@ -30,10 +44,8 @@ export default function TabLayout() {
         name="projects"
         options={{
           title: 'Projects',
-          tabBarIcon: ({ color, focused }) => (
-            <View style={focused ? styles.activeIconContainer : null}>
-              <Folder color={color} size={24} />
-            </View>
+          tabBarIcon: ({ color }) => (
+            <FolderOpen color={color} size={22} />
           ),
         }}
       />
@@ -43,24 +55,20 @@ export default function TabLayout() {
 
 const styles = StyleSheet.create({
   tabBar: {
-    backgroundColor: COLORS.surface,
+    backgroundColor: COLORS.white,
     borderTopWidth: 1,
-    borderTopColor: COLORS.border,
+    borderTopColor: 'rgba(0,0,0,0.06)',
     height: 64,
     paddingBottom: 8,
     paddingTop: 8,
-    boxShadow: '0px -2px 10px rgba(0,0,0,0.4)',
-    elevation: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -4 },
+    shadowOpacity: 0.05,
+    shadowRadius: 12,
+    elevation: 8,
   } as any,
   tabBarLabel: {
-    fontFamily: 'Syne_600SemiBold',
+    fontFamily: 'Inter_500Medium',
     fontSize: 11,
-  },
-  activeIconContainer: {
-    borderBottomWidth: 2,
-    borderBottomColor: COLORS.accent,
-    paddingBottom: 2,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
 });
